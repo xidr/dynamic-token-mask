@@ -9,14 +9,14 @@ source: Project setup conversation and existing server knowledge, 2026-10-22
 
 # Module overview
 
-**TL;DR:** Dynamic Token Mask will preserve source images and allow editing a circular mask's center and size for scene-token rendering. Only the scaffold exists; a source-informed design is proposed in [[circular-mask-design]], with no runtime verification.
+**TL;DR:** Dynamic Token Mask will preserve source images and allow editing a circular mask's center and size for scene-token rendering. The storage service is implemented; editor and rendering remain proposed in [[circular-mask-design]], with no runtime verification.
 
 ## Details
 
 - ID: `dynamic-token-mask`; title: Dynamic Token Mask; initial manifest version: `0.1.0`.
 - Target: Foundry VTT 14. The manifest specifies minimum 14 and deliberately makes no verified-version claim.
-- `scripts/main.js` and `styles/module.css` contain placeholders. English and Russian language files are empty JSON objects.
-- No dependencies, build pipeline, settings, hooks, masking code or automated test suite have been introduced.
+- `scripts/main.js` registers the mask store and exposes the module API. Styles and language files remain placeholders because no UI is implemented.
+- A hidden world setting, lifecycle hooks and focused storage tests are implemented; see [[mask-storage]]. No dependencies or build pipeline have been introduced.
 - The project has its own Git repository, initialized on `main`; no remote was configured during setup.
 
 ## Open design questions

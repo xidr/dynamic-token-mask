@@ -4,18 +4,20 @@ A system-independent Foundry VTT module for dynamic circular token masking.
 
 ## Status
 
-Initial scaffold only. Token masking is not implemented yet. Targets Foundry VTT 14; runtime compatibility has not yet been verified.
+Mask storage is implemented; the mask editor, file-browser controls and token rendering are not implemented yet. Targets Foundry VTT 14; runtime compatibility has not yet been verified.
 
 The intended behavior preserves original images and lets users adjust a circular mask's center and size for scene-token rendering. See the [proposed design](knowledge/topics/module/circular-mask-design.md), based on inspection of the installed Foundry 14.367 source.
 
-File-picker source inspection is complete: the [integration plan](knowledge/reference/file-picker-integration.md) uses the existing browser's render hooks for image controls. Storage, editing and browser integration are not implemented yet.
+File-picker source inspection is complete: the [integration plan](knowledge/reference/file-picker-integration.md) uses the existing browser's render hooks for image controls. The storage service is available through `game.modules.get("dynamic-token-mask").api.masks` after Foundry is ready. See the [storage contract](knowledge/reference/mask-storage.md).
 
 ## Development
 
 Open this folder as its own IDE project and Git repository.
 
 - `module.json`: Foundry module manifest.
-- `scripts/main.js`: browser ES module entry point.
+- `scripts/main.js`: registers storage and exposes the module API.
+- `scripts/mask-store.mjs`: validated world-level mask persistence.
+- `tests/mask-store.test.mjs`: storage tests (`node --test tests/mask-store.test.mjs`).
 - `styles/module.css`: module UI styles.
 - `lang/en.json`, `lang/ru.json`: translations.
 

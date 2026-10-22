@@ -8,6 +8,8 @@
 - [[reference/ide-tools|IDE tools]]: project targeting and connection checks
 - [[reference/file-picker-integration|File picker integration]]: v14 hooks, image paths and mask-control integration plan
 
+- [[reference/mask-storage|Mask storage]]: implemented schema, API, validation and concurrency limits
+
 ## How-to
 - [[how-to/develop-and-validate|Develop and validate]]: local checks and runtime validation
 

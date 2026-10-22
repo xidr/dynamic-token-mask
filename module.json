@@ -1,7 +1,7 @@
 {
   "id": "dynamic-token-mask",
   "title": "Dynamic Token Mask",
-  "description": "Dynamic circular masking for tokens. Initial development scaffold.",
+  "description": "Dynamic circular masking for tokens. Mask storage implemented; editor and rendering in development.",
   "version": "0.1.0",
   "compatibility": {
     "minimum": "14"
