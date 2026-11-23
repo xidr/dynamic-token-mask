@@ -4,6 +4,8 @@ A system-independent Foundry VTT module for dynamic circular token masking.
 
 ## Status
 
+See the [development roadmap](ROADMAP.md) for completed milestones and the planned editor, file-picker integration and runtime checks.
+
 The module stores one circular mask per image path in each world. Ordinary static scene tokens use the selected circle as a cropped portrait while retaining their original image path and token dimensions. In a Foundry VTT 14.369 test world, saving a mask updated two matching tokens in both GM and player sessions. The crops persisted across reconnects and reloads, and removing the mask restored the original portraits in both sessions. [Test-world procedure](knowledge/how-to/verify-static-token-masks.md)
 
 Once Foundry is ready, a GM can save or remove masks through `game.modules.get("dynamic-token-mask").api.masks`. The mask editor and file-browser controls are planned. [Storage contract](knowledge/reference/mask-storage.md) · [Renderer feature record](knowledge/features/static-token-renderer.md) · [File-picker integration plan](knowledge/reference/file-picker-integration.md)
