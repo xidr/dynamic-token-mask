@@ -61,7 +61,13 @@ inline_code = re.compile(r'(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)')
 link_destination = re.compile(r'\(\s*(<[^>\n]+>|[^\s)]*)'
                               r'(?:\s+["\'][^\n]*?["\'])?\s*\)')
 link = re.compile(r'\[([^\]\n]+)\]' + link_destination.pattern)
-label_token = re.compile(r'\\[\\\[\]]|[\[\]]')
+label_token = re.compile(r'\\[\\!\[\]]|!?\[|\]')
+example_open = re.compile(r'\([ \t]*')
+angle_destination = re.compile(r'<(?:\\.|[^\\<>])*>')
+destination_token = re.compile(r'\\[\\()]|[()\x01-\x20\x7f]')
+example_close = re.compile(
+    r'''(?:[ \t]+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^()\\])*\)))?'''
+    r'[ \t]*\)')
 errors = []
 entries = {}
 
@@ -91,24 +97,51 @@ def code_text(span):
     return text
 
 
+def example_destination(text, start):
+    if not (opening := example_open.match(text, start)):
+        return None
+    start = opening.end()
+    if text[start:start + 1] == '<':
+        if angle := angle_destination.match(text, start):
+            return example_close.match(text, angle.end())
+        return None
+
+    depth = 0
+    for token in destination_token.finditer(text, start):
+        if token[0] == '(':
+            depth += 1
+        elif token[0] == ')' and depth:
+            depth -= 1
+        elif len(token[0]) == 1:
+            # Unescaped whitespace or the closing parenthesis ends a bare destination.
+            return example_close.match(text, token.start()) if not depth else None
+    return None
+
+
 def code_without_links(span):
     text = code_text(span)
     visible = mask_code(text)
     openings = []
     examples = []
     end = 0
+    last_link_start = -1
     for token in label_token.finditer(visible):
         if token.start() < end:
             continue
-        if token[0] == '[':
-            openings.append((token.start(), len(examples)))
+        if token[0] in ('[', '!['):
+            openings.append((token.start(), len(examples), token[0] == '!['))
         elif token[0] == ']' and openings:
-            start, first_inner = openings.pop()
-            if destination := link_destination.match(visible, token.end()):
+            start, first_inner, image = openings.pop()
+            # An ordinary link disables earlier link openers. Images can still close.
+            if not image and start < last_link_start:
+                continue
+            if destination := example_destination(visible, token.end()):
                 end = destination.end()
                 # The outer example already covers any examples inside its label.
                 del examples[first_inner:]
                 examples.append((start, end))
+                if not image:
+                    last_link_start = start
 
     remaining = []
     cursor = 0
