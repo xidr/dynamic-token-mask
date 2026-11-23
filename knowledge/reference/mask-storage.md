@@ -1,7 +1,7 @@
 ---
 title: Mask storage
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-11-23
 tags: [module, storage, implementation]
 status: active
 source: scripts/mask-store.mjs, scripts/main.js and focused Node tests
@@ -31,7 +31,7 @@ Foundry setting changes emit `Hooks.callAll("dynamic-token-mask.masksChanged", p
 
 The service reads fresh settings for each operation and serializes writes within its instance. Failed writes do not poison the queue. Concurrent GM browsers/tabs still use whole-setting last-write-wins behavior and can overwrite each other's edits; multi-writer coordination is not implemented. This is a small-library first version, not an atomic database. Returned records cannot mutate stored data.
 
-Runtime code only registers storage/API; there is no file-browser UI, image processing or token rendering. No world activation or server restart occurred. The existing design note remains a proposal where it differs from this implemented contract.
+The static token renderer consumes this API and its change hook. GMs can manage masks through the API while the file-browser UI is planned. The [[verify-static-token-masks]] procedure covers persistence and receiving-client behavior in Foundry.
 
 ## Validation
 

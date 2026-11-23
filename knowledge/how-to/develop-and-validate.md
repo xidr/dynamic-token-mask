@@ -50,3 +50,4 @@ Before marking a Foundry version verified in the manifest, exercise the implemen
 
 - [[environment]]
 - [[topics/module/_overview]]
+- [[verify-static-token-masks]]

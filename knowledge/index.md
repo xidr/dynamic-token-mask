@@ -14,12 +14,14 @@
 - [[reference/mask-storage|Mask storage]]: implemented schema, API, validation and concurrency limits
 
 ## How-to
-- [[how-to/merge-a-task-branch|Merge a task branch]]: approval, checks and cleanup
-- [[how-to/write-notes|Write project notes]]: templates and index coverage
 - [[how-to/develop-and-validate|Develop and validate]]: local checks and runtime validation
+- [[how-to/merge-a-task-branch|Merge a task branch]]: approval, checks and cleanup
+- [[how-to/verify-static-token-masks|Verify static token masks in Foundry]]: GM and player runtime checks
+- [[how-to/write-notes|Write project notes]]: templates and index coverage
 
 ## Features
 - [[features/per-image-mask-storage|Per-image mask storage]]: shipped behavior and limits
+- [[features/static-token-renderer|Static token renderer]]: shared crops for ordinary static scene tokens
 
 ## Open bugs
 
@@ -32,6 +34,7 @@ No open bug records.
 - [[2026-11-23-kb-and-workflow-setup]]
 - [[2026-11-23-warn-not-block]]
 - [[decisions/2026-10-22-standalone-module|Standalone module]]
+- [[decisions/2026-11-23-static-token-mesh-crops|Use derived mesh textures for static token crops]]: crop framing and resource ownership
 
 ## Templates
 - [[templates/note|Note template]]

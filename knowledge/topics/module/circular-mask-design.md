@@ -9,9 +9,9 @@ source: User requirements and installed Foundry VTT 14.367 client/common source 
 
 # Circular mask design
 
-Last verified: 2026-10-22 (Foundry source observations)
+Last verified: 2026-11-23 (milestone code and tests). Foundry source observations below date to 2026-10-22.
 
-**TL;DR:** Preserve original image files and token image paths. Proposed implementation stores image-specific circle definitions in a world setting and supplies temporary circular cropped textures to token meshes. The original design below predates the implemented [[mask-storage]] contract. Framing and rendering remain proposals.
+**TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [[mask-storage]] and [[static-token-renderer]] for the implemented behavior, and [[file-picker-integration]] for the proposed editor.
 
 ## Confirmed requirements
 
@@ -35,7 +35,7 @@ Paths below are relative to that application root. No server code or world data 
 - `client/applications/sheets/token/`: v14 has distinct scene-token and prototype-token configuration applications, with preview documents.
 - `client/helpers/client-settings.mjs`: world settings provide persistence and change callbacks. Image files themselves are not token documents with flags.
 
-## Proposed behavior and persistence
+## Original storage and framing proposal
 
 One mask per exact resolved image path per world, shared by tokens using that image. A GM edits it; connected clients receive the setting change and refresh matching visible tokens. Other scenes resolve the current definition when drawn. No edits to individual scene documents are needed.
 
@@ -43,13 +43,13 @@ Use a hidden module world setting with a versioned array of records, each contai
 
 Proposed framing: crop the square bounding the selected circle, make pixels outside the circle transparent, and fit that square to the token. Thus choosing a smaller circle zooms in on the selected subject; it does not shrink the displayed token. Default fit preserves aspect ratio. Existing nonuniform scale or fill on rectangular footprints can distort a circle; show this distinction in preview rather than silently rewriting token settings.
 
-Per-image association was subsequently confirmed by the user, including separate masks for images selected by wildcard tokens. World-level storage has since shipped as described in [[mask-storage]]. Crop framing remains proposed. Future per-token overrides or cross-world export are separate features.
+Per-image association was subsequently confirmed by the user, including separate masks for images selected by wildcard tokens. World-level storage has since shipped as described in [[mask-storage]]. The static renderer implements this crop framing. Future per-token overrides or cross-world export are separate features.
 
 ## Proposed editor
 
 The current first-phase plan extends Foundry's existing file browser with per-image controls opening an ApplicationV2 editor; see [[file-picker-integration]]. This supersedes the earlier dedicated browser proposal. Direct token-sheet shortcuts can follow later. Show the source image with draggable circle center and radius handle, numeric controls, and a checkerboard token-result preview. Provide Save, Cancel and Remove mask. Save explicitly indicates that all tokens using this image in this world are affected. Keep edits local until saved; removal restores ordinary rendering. A future shortcut from a token should use its effective rendered image, including an explicit ring subject.
 
-## Proposed rendering implementation
+## Original rendering proposal
 
 For static images, create an antialiased transparent square in a browser canvas and a module-owned PIXI texture. This is a transient derived texture, not an exported image file. Keep document paths, Foundry's cached source textures and `token.texture` intact; assign the derived texture to the token mesh, then request the necessary mesh sizing refresh. Existing transparency is preserved.
 
@@ -59,13 +59,15 @@ Browser-generated texture alpha should pass through Foundry's existing color/dep
 
 Dynamic rings, drag/configuration previews and image-change transitions need explicit integration. Prototype hook behavior and transition completion behavior must be tested. If hooks cannot handle a path cleanly, isolate a narrow compatibility wrapper rather than replace the Token class or global image loader. No dependency or wrapper API is chosen yet. Video/animated-image masking is outside the proposed initial static-image release; preserve normal rendering for those resources.
 
-## Validation before implementation is considered compatible
+## Broader runtime validation
 
 Test in an agreed test world: opaque rectangular and transparent sources; off-center and small circles; shared images and unmasked images; save/remove on GM and player clients; reload and scene changes; wildcard resolution; rotation/mirroring/scale/fit; drag and configuration previews; source changes including transitions; rings with and without explicit subjects; visibility, tint, alpha, detection and occlusion; cache cleanup and failed loads. Preserve gameplay footprint, vision and targeting behavior. Verify disabling the module restores original images after reload.
 
-No runtime verification, module activation, server restart or implementation occurred during this design investigation.
+The designated Foundry 14.369 milestone checks are tracked in [[verify-static-token-masks]].
 
 ## Related
 
+
 - [[topics/module/_overview]]
 - [[develop-and-validate]]
+- [[static-token-renderer]]
