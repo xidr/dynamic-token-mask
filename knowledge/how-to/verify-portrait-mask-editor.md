@@ -27,8 +27,10 @@ After the approved merge, use the designated test world with the module enabled 
 
 ## Check it worked
 
-Record the Foundry build and outcomes for both preview comparisons, GM and player behavior, save, Cancel, reopen, reload, conflict, errors and removal. Mark the checks in [[portrait-mask-editor]] and the roadmap only after exercising them in Foundry. See [[features/portrait-mask-editor|the feature record]] for the November 23, 2026 results on Foundry 14.369.
+**TODO: unverified**
+
+Record the Foundry build and outcomes for both preview comparisons, GM and player behavior, save, Cancel, reopen, reload, conflict, errors and removal. Mark the checks in [Portrait mask editor](../features/portrait-mask-editor.md) and the roadmap only after exercising them in Foundry. These checks are pending.
 
 ## If it goes wrong
 
-Record the exact image format, source dimensions and token texture settings, alongside the observed frame and any errors from each browser console. The [[verify-static-token-masks]] procedure can verify renderer behavior separately.
+Record the exact image format, source dimensions and token texture settings, alongside the observed frame and any errors from each browser console. The [Verify static token masks in Foundry](verify-static-token-masks.md) procedure can verify renderer behavior separately.

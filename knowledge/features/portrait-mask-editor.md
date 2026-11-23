@@ -17,7 +17,7 @@ Add a Foundry ApplicationV2 editor to open a static portrait, initialize from it
 
 ## Decided
 
-Use a GM-only settings menu and a ready-world API that can open the same editor for a supplied path. Share the renderer's crop drawing with the editor. Compare the loaded mask with the current record inside each queued write. See [[2026-11-23-portrait-editor-preview-and-writes]].
+Use a GM-only settings menu and a ready-world API that can open the same editor for a supplied path. Share the renderer's crop drawing with the editor. Compare the loaded mask with the current record inside each queued write. See [Share crop drawing and check editor snapshots in the write queue](../decisions/2026-11-23-portrait-editor-preview-and-writes.md).
 
 ## Behavior
 
@@ -29,12 +29,10 @@ Use a GM-only settings menu and a ready-world API that can open the same editor 
 
 ## Out of scope
 
-Per-image edit controls and indicators inside the native file picker, animation, dynamic rings and token-specific fit previews. Simultaneous edits from separate GM browsers still follow the world setting's concurrency limits. See [[file-picker-integration]] and [[mask-storage]].
+Per-image edit controls and indicators inside the native file picker, animation, dynamic rings and token-specific fit previews. Simultaneous edits from separate GM browsers still follow the world setting's concurrency limits. See [File picker integration](../reference/file-picker-integration.md) and [Mask storage](../reference/mask-storage.md).
 
 ## Implementation
 
 `scripts/main.js` registers the GM menu and API. `scripts/mask-editor.mjs`, `scripts/mask-geometry.mjs` and `templates/mask-editor.hbs` implement the editor. `scripts/mask-renderer.mjs` provides crop drawing and `scripts/mask-store.mjs` checks expected snapshots. `styles/module.css`, `lang/en.json` and `lang/ru.json` provide presentation and labels.
 
-On 2026-11-23, the full Node suite passed. It covers path preservation, crop geometry and clipping, static format detection, bounded radius feedback, Cancel, persistence failures and competing editor writes.
-
-On Foundry 14.369, the GM opened the settings menu and loaded two 400×200 PNGs. The player had no editor menu. Center and radius dragging, numeric framing, the bounded slider, Save, Cancel and reopening worked. Both clients showed the same 120×120 crop as the editor at the sampled center, corner and interior transparency coordinates. The two wide-portrait tokens changed together and the token on the other path kept its original texture. Each footprint stayed 1×1. Both crops survived reloads on both clients. Removing the masks restored all three original textures. Choosing a file in Foundry’s picker updated the editor path and loaded the selected image. Missing and unsupported files showed the expected errors. A stale editor reported a conflict on Remove, and reloading it recovered the newer saved radius. A follow-up GM browser check at 1400×950 confirmed all four footer actions worked from the default position after loading a 400×200 PNG. See [[editor-actions-below-viewport]] and [[verify-portrait-mask-editor]].
+On 2026-11-23, the full Node suite passed. It covers path preservation, crop geometry and clipping, static format detection, bounded radius feedback, Cancel, persistence failures and competing editor writes. The designated Foundry checks are pending. See [Verify the portrait mask editor in Foundry](../how-to/verify-portrait-mask-editor.md).

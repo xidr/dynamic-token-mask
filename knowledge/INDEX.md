@@ -21,11 +21,13 @@ Use the **Read when** hints to find the notes you need. The [authoring guide](ho
 - [Develop and validate](how-to/develop-and-validate.md) — local checks and runtime validation. Read when: testing a module change.
 - [Merge a task branch](how-to/merge-a-task-branch.md) — approval, checks and cleanup. Read when: preparing or carrying out an approved merge.
 - [Verify static token masks in Foundry](how-to/verify-static-token-masks.md) — GM and player runtime checks. Read when: verifying the renderer in a designated world.
+- [Verify the portrait mask editor in Foundry](how-to/verify-portrait-mask-editor.md) — preview, persistence and error checks. Read when: verifying the editor in a designated world.
 - [Write project notes](how-to/write-notes.md) — templates and index coverage. Read when: writing, moving or reviewing notes.
 
 ## Features
 
 - [Per-image mask storage](features/per-image-mask-storage.md) — shipped behavior and limits. Read when: changing how masks are stored or updated.
+- [Portrait mask editor](features/portrait-mask-editor.md) — GM image framing, crop preview and shared-mask editing. Read when: changing or using the editor.
 - [Static token renderer](features/static-token-renderer.md) — shared crops for ordinary static scene tokens. Read when: changing or verifying token rendering.
 
 ## Open bugs
@@ -40,6 +42,7 @@ No open bug records.
 
 - [Common conventions for module knowledge](decisions/2026-11-23-v13-knowledge-conventions.md) — relative links, six templates and decision metadata. Read when: writing, moving or reviewing notes.
 - [Knowledge base and workflow setup](decisions/2026-11-23-kb-and-workflow-setup.md) (replaced in part by [Common conventions for module knowledge](decisions/2026-11-23-v13-knowledge-conventions.md)) — the successor adopts relative Markdown links, `INDEX.md`, six templates and standardized decision records. Read when: tracing Codex and Gemini roles, approvals or calibration.
+- [Share crop drawing and check editor snapshots in the write queue](decisions/2026-11-23-portrait-editor-preview-and-writes.md) — shared preview drawing and conditional writes. Read when: changing how the editor draws crops or saves and removes masks.
 - [Standalone module](decisions/2026-10-22-standalone-module.md) — independent module and repository. Read when: tracing the module's relationship to Foundry systems.
 - [Use derived mesh textures for static token crops](decisions/2026-11-23-static-token-mesh-crops.md) — crop framing and resource ownership. Read when: changing how the renderer builds or releases a crop.
 - [Warnings for soft game rules](decisions/2026-11-23-warn-not-block.md) — inline warnings and persistent markers. Read when: adding a soft game-rule boundary.

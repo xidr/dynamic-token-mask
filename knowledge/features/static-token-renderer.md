@@ -25,7 +25,7 @@ At ready and on draw, the renderer reads the mask for the exact image path. Rece
 
 ## Out of scope
 
-This milestone covered ordinary static scene tokens. See [[portrait-mask-editor]] for the editor and [[file-picker-integration]] for planned per-image picker controls. Dynamic rings, drag and configuration previews, animated images and image transitions remain future work.
+This milestone covered ordinary static scene tokens. See [Portrait mask editor](portrait-mask-editor.md) for the editor and [File picker integration](../reference/file-picker-integration.md) for planned per-image picker controls. Dynamic rings, drag and configuration previews, animated images and image transitions remain future work.
 
 ## Implementation
 

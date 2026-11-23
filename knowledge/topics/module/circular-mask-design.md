@@ -11,7 +11,7 @@ source: User requirements and installed Foundry VTT 14.367 client/common source 
 
 Last verified: 2026-11-23 (storage, renderer and editor code and tests). Foundry source observations below date to 2026-10-22.
 
-**TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [mask storage](../../reference/mask-storage.md) and [Static token renderer](../../features/static-token-renderer.md) for the implemented behavior, and [File picker integration](../../reference/file-picker-integration.md) for the proposed editor.
+**TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [mask storage](../../reference/mask-storage.md), [Static token renderer](../../features/static-token-renderer.md) and [Portrait mask editor](../../features/portrait-mask-editor.md) for the implemented behavior, and [File picker integration](../../reference/file-picker-integration.md) for the proposed per-image controls.
 
 ## Confirmed requirements
 
@@ -47,7 +47,11 @@ Per-image association was subsequently confirmed by the user, including separate
 
 ## Portrait mask editor
 
-The current first-phase plan extends Foundry's existing file browser with per-image controls opening an ApplicationV2 editor; see [File picker integration](../../reference/file-picker-integration.md). This supersedes the earlier dedicated browser proposal. Direct token-sheet shortcuts can follow later. Show the source image with draggable circle center and radius handle, numeric controls, and a checkerboard token-result preview. Provide Save, Cancel and Remove mask. Save explicitly indicates that all tokens using this image in this world are affected. Keep edits local until saved; removal restores ordinary rendering. A future shortcut from a token should use its effective rendered image, including an explicit ring subject.
+The ApplicationV2 editor opens from GM settings or the module's `openEditor(src)` API. It loads the exact path entered or selected with Foundry's image picker. The source image has a draggable circle center and radius handle. Numeric controls and a radius slider update the same constrained circle. The checkerboard preview displays the square crop with the renderer's circular clip and the source's existing transparency.
+
+Edits remain local until Save or Remove. An inline notice explains the effect on eligible tokens throughout the world. Each write compares the loaded mask with the current mask within the store's write queue. See [Portrait mask editor](../../features/portrait-mask-editor.md) and [mask storage](../../reference/mask-storage.md).
+
+Per-image file-picker controls are planned in [File picker integration](../../reference/file-picker-integration.md). Future token shortcuts should use the effective rendered image, including an explicit ring subject.
 
 ## Original rendering proposal
 
@@ -63,10 +67,9 @@ Dynamic rings, drag/configuration previews and image-change transitions need exp
 
 Test in an agreed test world: opaque rectangular and transparent sources; off-center and small circles; shared images and unmasked images; save/remove on GM and player clients; reload and scene changes; wildcard resolution; rotation/mirroring/scale/fit; drag and configuration previews; source changes including transitions; rings with and without explicit subjects; visibility, tint, alpha, detection and occlusion; cache cleanup and failed loads. Preserve gameplay footprint, vision and targeting behavior. Verify disabling the module restores original images after reload.
 
-The designated Foundry 14.369 milestone checks are tracked in [Verify static token masks in Foundry](../../how-to/verify-static-token-masks.md).
+The Foundry 14.369 renderer checks are recorded in [Verify static token masks in Foundry](../../how-to/verify-static-token-masks.md). Pending editor checks are tracked in [Verify the portrait mask editor in Foundry](../../how-to/verify-portrait-mask-editor.md).
 
 ## Related
-
 
 - [Module overview](_overview.md)
 - [Develop and validate](../../how-to/develop-and-validate.md)

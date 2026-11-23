@@ -9,7 +9,7 @@ source: Project setup conversation and existing server knowledge, 2026-10-22
 
 # Develop and validate
 
-**TL;DR:** The scaffold loads directly as browser JavaScript without a build step. Validate changed files locally, then verify implemented behavior in a designated Foundry test world.
+**TL;DR:** The module loads directly as browser JavaScript without a build step. Validate changed files locally, then verify implemented behavior in a designated Foundry test world.
 
 ## Details
 
@@ -50,4 +50,5 @@ Before marking a Foundry version verified in the manifest, exercise the implemen
 
 - [Environment](../reference/environment.md)
 - [Module overview](../topics/module/_overview.md)
+- [Verify the portrait mask editor in Foundry](verify-portrait-mask-editor.md)
 - [Verify static token masks in Foundry](verify-static-token-masks.md)

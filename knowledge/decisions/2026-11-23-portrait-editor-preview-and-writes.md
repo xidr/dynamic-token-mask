@@ -3,8 +3,6 @@ title: Share crop drawing and check editor snapshots in the write queue
 date: 2026-11-23
 status: accepted
 tags: [editor, rendering, storage]
-replaced_by:
-replaced_part:
 ---
 
 # Share crop drawing and check editor snapshots in the write queue

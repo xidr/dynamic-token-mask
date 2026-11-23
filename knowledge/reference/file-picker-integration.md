@@ -36,7 +36,7 @@ Attach the button click handler directly to the button; call preventDefault and 
 
 Decoration must be idempotent: mark inserted controls, bind each once, and update existing indicators. Keep open picker references only while needed and remove them on close. On mask changes, update matching indicators directly instead of rebrowsing/rerendering the picker and disturbing search, scroll or selection. Read current records from the storage service rather than retaining stale record objects in button closures.
 
-Use the file path exposed by the row. Do not enumerate folders separately or recursively, and do not load every full-resolution image merely to decorate the browser. File-extension eligibility is only a preliminary filter: animated WebP/PNG can share static extensions, so the later editor must define and validate supported formats instead of claiming extension checks detect animation.
+Use the file path exposed by the row. Do not enumerate folders separately or recursively, and do not load every full-resolution image merely to decorate the browser. Animated WebP and PNG can share static extensions. Use extensions as a preliminary filter. The editor checks the file container before decoding.
 
 ## Compatibility boundaries and verification
 
@@ -51,4 +51,6 @@ The storage service and portrait editor are implemented. The planned adapter can
 ## Related
 
 - [the circular mask design](../topics/module/circular-mask-design.md)
+- [Mask storage](mask-storage.md)
+- [Portrait mask editor](../features/portrait-mask-editor.md)
 - [Develop and validate](../how-to/develop-and-validate.md)
