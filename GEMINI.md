@@ -46,9 +46,9 @@ AGENTS.md routes Codex to CODEX.md and Gemini to GEMINI.md. Mirror What this is,
 - **`@builder` (Swarm worker — fresh context, no `fork`):** Spawned after plan approval without
   `fork` (0-token start, free of planning chatter) and pinned to the approved `Builder:` model.
   Copies `<appDataDir>/brain/<conversation-id>/scratch/PLAN.md` into the worktree's `PLAN.md` and
-  commits it first, builds the agreed batch, runs tests/checks, and wakes `@reviewer` when ready.
-  Sleeps in `waiting` (zero cost, batch memory intact) while `@reviewer` and the user review its
-  work. On multi-batch tasks, after a batch's review fixes are committed, the Coordinator `kill`s
+  commits it first, builds the agreed batch, runs applicable checks, and hands off according to §5.
+  Sleeps in `waiting` (zero cost, batch memory intact) while its report or work is reviewed.
+  On multi-batch tasks, once the batch and any review fixes are committed, the Coordinator `kill`s
   the old builder and spawns a fresh `@builder-N` (no `fork`) for the next batch.
 - **`@reviewer` (Swarm worker — fresh context, `model: "gemini-4-neon-high"`):** Spawned
   without `fork` so it starts with a clean context unanchored on `@builder`'s reasoning. Follows
@@ -94,10 +94,11 @@ Once the user approves the plan and batch:
    (for Batch 1, before the worktree exists).
 2. Name the swarm: `swarm{action: "title", title: "<task title>"}`.
 3. Spawn `@builder` with a **fresh** context (no `fork`) pinned to the chosen `Builder:` model:
-   `swarm{action: "add", name: "builder", model: "<chosen-builder-model>", brief: "You own task/<slug> in .worktrees/<slug>. Follow Workflow §3–§4 in GEMINI.md: create the worktree, copy <scratch>/PLAN.md verbatim to PLAN.md in the worktree root and commit it first, then implement steps <X–Y>. When the full test suite (and the other checks that apply) passes, wake @reviewer on the board with the worktree absolute path, base branch (main), and covered steps (or for docs-only tasks, report directly to @coordinator)."}`
-4. For non-docs-only tasks, spawn `@reviewer` with a **fresh** context (no `fork`) pinned to
-   `gemini-4-neon-high`:
-   `swarm{action: "add", name: "reviewer", model: "gemini-4-neon-high", brief: "You are the independent Reviewer. Wait in waiting until @builder tags you with a finished batch. Read and follow .agents/agents/reviewer.md strictly. Never edit files or switch branches. When your review is complete, post your full report to @coordinator."}`
+   `swarm{action: "add", name: "builder", model: "<chosen-builder-model>", brief: "You own task/<slug> in .worktrees/<slug>. Follow Workflow §3–§5 in GEMINI.md: create the worktree, copy <scratch>/PLAN.md verbatim to PLAN.md in the worktree root and commit it first, then implement steps <X–Y>. After the applicable checks pass, post the absolute worktree path, base branch (main), covered steps and check results to @reviewer for changes beyond Markdown or when the user requests review. For Markdown-only work without a review request, report directly to @coordinator."}`
+4. Spawn `@reviewer` for changes beyond Markdown or when the user requests review. Use a **fresh**
+   context (no `fork`) pinned to `gemini-4-neon-high`. If the user requests review later, the
+   Coordinator spawns the reviewer if needed and arranges the handoff in §5.
+   `swarm{action: "add", name: "reviewer", model: "gemini-4-neon-high", brief: "You are the independent Reviewer. Wait in waiting until @builder or @coordinator tags you with a finished batch. Read and follow .agents/agents/reviewer.md strictly. Never edit files or switch branches. When your review is complete, post your full report to @coordinator."}`
 5. End your turn by showing the user the `open_board` link from the `swarm` result on its own line.
 
 ### 4. Per step (inside `@builder`)
@@ -116,19 +117,24 @@ Once the user approves the plan and batch:
 4. **Light notes update:** tick the step in `PLAN.md`; record any gotcha while it's fresh.
 5. **Commit** (code, tests, and `PLAN.md` together).
 
-### 5. After the agreed batch (`@builder` → `@reviewer` → Coordinator)
-1. `@builder` runs the FULL suite (and the other checks that apply), fixing any failure.
-2. **Handoff to Review** (docs-only tasks skip it unless the user asks): `@builder` posts `@reviewer`
-   on the board with the worktree's absolute path, the base branch (`main`), and which plan
-   steps the batch covered, then enters `waiting`.
-3. **Independent Review:** `@reviewer` inspects the diff and tests per `.agents/agents/reviewer.md`
+### 5. After the agreed batch
+1. `@builder` runs applicable checks, including the full suite for changes beyond Markdown, and
+   fixes any failures.
+2. **Handoff:** `@builder` posts the worktree's absolute path, the base branch (`main`), the covered
+   plan steps and check results to `@reviewer` for changes beyond Markdown or when the user requests
+   review, then enters `waiting`. For Markdown-only work without a review request, `@builder` posts
+   the same details directly to `@coordinator`, and the Coordinator proceeds to step 6. If the user
+   requests review after that report, the Coordinator sends the handoff details to `@reviewer` and
+   follows the review steps below.
+3. **Independent Review:** `@reviewer` inspects the diff and applicable checks per `.agents/agents/reviewer.md`
    and posts `@coordinator` with its full report (**Accept**, **Accept after fixes**, or **Rework**).
 4. **User Decision:** Coordinator gives the user `@reviewer`'s report **word for word** (findings and
    proposed fixes included), adds its own view where it disagrees, and waits for the user's choice.
 5. **Applying Fixes:** Coordinator wakes `@builder` referencing `@reviewer`'s `#seq` post (no copy-paste)
-   with the chosen fixes; `@builder` applies them as steps (§4), re-runs the full suite, and reports back.
+   with the chosen fixes; `@builder` applies them as steps (§4), re-runs applicable checks, and reports back.
 6. **Work not logically done** → Coordinator proposes the next batch; upon approval, `kill`s the old
-   `@builder` and spawns a fresh `@builder-N` (no `fork`). **Work logically done** → proceed to §6 Finish.
+   `@builder` and spawns a fresh `@builder-N` (no `fork`). Apply the review rule from §3 and spawn
+   `@reviewer` if required and absent. **Work logically done** → proceed to §6 Finish.
 
 ### 6. Finish (`@builder` → Coordinator)
 1. `@builder` performs the **full notes update**:
@@ -141,4 +147,6 @@ Once the user approves the plan and batch:
    the branch is ready.
 4. **Propose the merge:** Coordinator presents a short summary to the user (mentioning any new
    gotcha or bug other worktrees should know about) and waits for explicit merge approval.
-5. **After approval:** Merge with `knowledge/how-to/merge-a-task-branch.md` (defer cleanup until the checkout is unused), and Coordinator calls `swarm{action: "kill"}` on `builder` and `reviewer`.
+5. **After approval:** Merge with `knowledge/how-to/merge-a-task-branch.md` (defer cleanup until the
+   checkout is unused). The Coordinator calls `swarm{action: "kill"}` on `builder` and on `reviewer`
+   if a reviewer was spawned.
