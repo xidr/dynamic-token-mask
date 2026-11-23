@@ -89,11 +89,27 @@ def code_text(span):
     return text
 
 
+def code_without_links(span):
+    text = code_text(span)
+    for example in reversed(list(link.finditer(mask_code(text)))):
+        start, end = example.span()
+        text = text[:start] + ' ' + text[end:]
+    return text
+
+
+def atx_heading(line):
+    if match := re.match(r'^ {0,3}(#{1,6})([ \t].*)?$', line):
+        opening, body = match.groups()
+        title = re.sub(r'[ \t]+#+[ \t]*$', '', body or '').strip(' \t')
+        return len(opening), title
+    return None
+
+
 def heading_anchors(path):
     counts = Counter()
     for _, line in prose(path.read_text()):
-        if match := re.match(r'^ {0,3}#{1,6}\s+(.+?)\s*#*$', line):
-            title = match[1]
+        if (heading := atx_heading(line)) and heading[1]:
+            title = heading[1]
             for item in reversed(list(link.finditer(mask_code(title)))):
                 start, end = item.span(1)
                 title = title[:item.start()] + title[start:end] + title[item.end():]
@@ -184,14 +200,15 @@ for source in sorted(sources):
     last_label = ''
     for number, line in prose(source.read_text()):
         where = f'{source.relative_to(repo)}:{number}'
-        if line.startswith(('# ', '## ')):
-            in_templates = line.rstrip() == '## Templates'
+        if (heading := atx_heading(line)) and heading[0] <= 2:
+            in_templates = heading == (2, 'Templates')
             last_label = ''
         visible = mask_code(line)
         if re.search(r'\[\[(?!/r(?:oll)?\s)[^\[\]]+\]\]', visible):
             errors.append(f'{where}: use a relative Markdown link')
+        code = (code_without_links(span) for span in inline_code.finditer(line))
         if (any(path in visible for path in stale_paths)
-                or any(code_text(span) in stale_paths for span in inline_code.finditer(line))):
+                or any(path in text for text in code for path in stale_paths)):
             errors.append(f'{where}: stale knowledge path')
         for match in link.finditer(visible):
             start, end = match.span(2)
