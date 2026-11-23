@@ -9,7 +9,7 @@ source: User requirements and installed Foundry VTT 14.367 client/common source 
 
 # Circular mask design
 
-Last verified: 2026-11-23 (storage, renderer and editor code and tests). Foundry source observations below date to 2026-10-22.
+Last verified: 2026-11-23 (storage, renderer and editor code and tests, plus Foundry 14.369 browser results). Foundry source observations below date to 2026-10-22.
 
 **TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [mask storage](../../reference/mask-storage.md), [Static token renderer](../../features/static-token-renderer.md) and [Portrait mask editor](../../features/portrait-mask-editor.md) for the implemented behavior, and [File picker integration](../../reference/file-picker-integration.md) for the proposed per-image controls.
 
@@ -65,9 +65,9 @@ Dynamic rings, drag/configuration previews and image-change transitions need exp
 
 ## Broader runtime validation
 
-Test in an agreed test world: opaque rectangular and transparent sources; off-center and small circles; shared images and unmasked images; save/remove on GM and player clients; reload and scene changes; wildcard resolution; rotation/mirroring/scale/fit; drag and configuration previews; source changes including transitions; rings with and without explicit subjects; visibility, tint, alpha, detection and occlusion; cache cleanup and failed loads. Preserve gameplay footprint, vision and targeting behavior. Verify disabling the module restores original images after reload.
+Foundry 14.369 testing covered shared crops, unmasked tokens, GM and player updates after save and removal, and persistence across browser reloads. The editor preview matched sampled token pixels for wide off-center and transparent PNGs, and the editor reported missing and unsupported images. See [Verify static token masks in Foundry](../../how-to/verify-static-token-masks.md) and [Portrait mask editor](../../features/portrait-mask-editor.md).
 
-The Foundry 14.369 renderer checks are recorded in [Verify static token masks in Foundry](../../how-to/verify-static-token-masks.md). Pending editor checks are tracked in [Verify the portrait mask editor in Foundry](../../how-to/verify-portrait-mask-editor.md).
+Broader test-world validation still needs to cover scene changes, wildcard resolution, rotation, mirroring, scale and fit, drag and configuration previews, source changes and transitions, rings with and without explicit subjects, visibility, tint, alpha, detection and occlusion, cache cleanup and renderer fallback after failed loads. Continue checking gameplay footprint, vision and targeting in those cases. Verify that disabling the module restores original images after reload.
 
 ## Related
 

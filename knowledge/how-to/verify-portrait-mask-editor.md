@@ -27,8 +27,6 @@ After the approved merge, use the designated test world with the module enabled 
 
 ## Check it worked
 
-**TODO: unverified**
-
 Record the Foundry build and outcomes for both preview comparisons, GM and player behavior, save, Cancel, reopen, reload, conflict, errors and removal. Mark the checks in [portrait-mask-editor](../features/portrait-mask-editor.md) and the roadmap only after exercising them in Foundry. See [the feature record](../features/portrait-mask-editor.md) for the November 23, 2026 results on Foundry 14.369.
 
 ## If it goes wrong
