@@ -135,7 +135,7 @@ def code_without_links(span):
             # An ordinary link disables earlier link openers. Images can still close.
             if not image and start < last_link_start:
                 continue
-            if destination := example_destination(visible, token.end()):
+            if destination := example_destination(text, token.end()):
                 end = destination.end()
                 # The outer example already covers any examples inside its label.
                 del examples[first_inner:]
