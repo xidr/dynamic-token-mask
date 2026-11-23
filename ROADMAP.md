@@ -1,6 +1,6 @@
 # Dynamic Token Mask roadmap
 
-The next milestone is for a GM to open a portrait in Foundry’s file picker, frame the subject, and see the result on every ordinary static token that uses that image in the world. Checked items reflect the merged implementation as of November 23, 2026. The remaining milestones are proposed in delivery order.
+The next milestone is for a GM to open a portrait in Foundry’s file picker, frame the subject, and see the result on every ordinary static token that uses that image in the world. Checked items reflect implementation and verification through November 23, 2026. The remaining milestones are in delivery order.
 
 ## 1. Store and render a mask — verified
 
@@ -8,12 +8,12 @@ The next milestone is for a GM to open a portrait in Foundry’s file picker, fr
 - [x] Render the selected circle on ordinary static tokens while preserving the source path and token dimensions. Matching tokens can share the cropped texture. [Renderer record](knowledge/features/static-token-renderer.md)
 - [x] Verify the full API workflow on Foundry 14.369. A GM and player saw the same off-center crop on two tokens, retained it across reloads, and saw both originals return after removal. Both tokens kept their 1×1 footprint and remained targetable. [Live test procedure](knowledge/how-to/verify-static-token-masks.md)
 
-## 2. Frame a portrait in the editor — next
+## 2. Frame a portrait in the editor — Foundry checks pending
 
-- [ ] Open a static image in an ApplicationV2 editor. Start with the saved circle when one exists. Let the GM move and resize it using either drag handles or numeric controls.
-- [ ] Show the resulting crop against a checkerboard. Verify the preview matches a rendered 1×1 token for a wide portrait with an off-center subject and for a portrait with existing transparency.
-- [ ] Keep edits local until Save. Explain that saving or removing a mask affects matching tokens across the world. Verify that Cancel preserves the previous mask and that reopening the editor shows the last saved circle.
-- [ ] Keep the circle inside the source bounds. Show an actionable error for unreadable or unsupported images and preserve the last saved mask if an edit fails. [Editor design](knowledge/topics/module/circular-mask-design.md)
+- [x] Open a static image in a GM-only ApplicationV2 editor. Start with an existing saved circle and let the GM move and resize it using drag handles or numeric controls.
+- [x] Draw the square crop on a checkerboard with the same circular clip and framing as the token renderer.
+- [x] Keep drafts local. Explain the world-wide effect of Save and Remove and bound the circle to the source. Report image and persistence failures while preserving the last saved mask. [Editor feature record](knowledge/features/portrait-mask-editor.md)
+- [ ] In the designated Foundry world, compare the preview with rendered 1×1 tokens for a wide off-center portrait and a portrait with transparency. Check Cancel, reopening, reload and removal. [Editor runtime procedure](knowledge/how-to/verify-portrait-mask-editor.md)
 
 ## 3. Open the editor from Foundry’s file picker
 

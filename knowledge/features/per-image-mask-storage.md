@@ -23,7 +23,7 @@ A ready GM can save and remove circles. Clients can read records and subscribe t
 
 ## Out of scope
 
-Editor, rendering and cross-world export.
+Cross-world export. See [[portrait-mask-editor]] and [[static-token-renderer]] for the features that use this service.
 
 ## Implementation
 

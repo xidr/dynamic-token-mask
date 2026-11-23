@@ -1,7 +1,7 @@
 ---
 title: File picker integration
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-11-23
 tags: [foundry, file-picker, integration]
 status: active
 source: Installed Foundry 14.367 client source and templates; inspection only
@@ -44,11 +44,13 @@ The render hook is an extension point; row selectors are version-specific templa
 
 Before shipping, test all four views; folder/source changes; partial rerenders; search; multiple picker windows; spaces, Unicode and encoded paths; non-image entries; keyboard clicks; normal selection/submission; drag/upload behavior; GM/player gating; indicators after save/remove; and cleanup after close. Include S3 path behavior when a test source is available. No world has been activated and no browser runtime test was performed during inspection.
 
-## Next implementation boundary
+## Adapter contract
 
-Build the storage service next, then the editor/preview, then this adapter. Expected service operations are lookup by source, save, remove and a change notification carrying affected paths. The adapter opens an editor by source and queries mask existence. It does not own persistence or token rendering.
+The storage service and portrait editor are implemented. The planned adapter can open an editor with `game.modules.get("dynamic-token-mask").api.openEditor(src)` using the row path. It can query `api.masks.has(src)` for indicators and listen for `dynamic-token-mask.masksChanged` to receive affected paths. Storage and token rendering remain in their respective services.
 
 ## Related
 
 - [[circular-mask-design]]
+- [[mask-storage]]
+- [[portrait-mask-editor]]
 - [[develop-and-validate]]
