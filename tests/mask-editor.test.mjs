@@ -191,6 +191,21 @@ test("loads the exact path, previews the saved crop, bounds edits, and preserves
   await reopened.close();
 });
 
+test("the radius slider follows the bounded circle before blur", async t => {
+  startWorld(true);
+  mockImage(t);
+  const editor = await openImage();
+  const body = editor.parts.body;
+  assert.equal(numeric(editor, "centerX", 80.04), 80.04);
+
+  const slider = body.querySelector('[name="radiusSlider"]');
+  slider.value = slider.valueAsNumber = 50;
+  slider.fire("input");
+  assert.equal(slider.value, 39.92);
+  assert.equal(body.querySelector('[name="radius"]').value, 39.92);
+  await editor.close();
+});
+
 test("save and remove use the loaded image, and failed writes preserve the saved mask", async t => {
   startWorld(true);
   mockImage(t);
@@ -226,6 +241,41 @@ test("save and remove use the loaded image, and failed writes preserve the saved
   assert.equal(api.masks.get(sourcePath), null);
   await editor.close();
 });
+
+for (const firstRemoves of [false, true]) {
+  const firstAction = firstRemoves ? "remove" : "save";
+  const secondAction = firstRemoves ? "save" : "remove";
+  test(`a queued editor ${secondAction} reports a conflict after a pending ${firstAction}`, async t => {
+    startWorld(true);
+    mockImage(t);
+    const first = await openImage();
+    const second = await openImage();
+    numeric(first, "radius", 15);
+    numeric(second, "radius", 10);
+
+    const started = Promise.withResolvers();
+    const release = Promise.withResolvers();
+    const {set} = game.settings;
+    t.mock.method(game.settings, "set", async (...args) => {
+      started.resolve();
+      await release.promise;
+      return set(...args);
+    });
+
+    const pending = first.persist(firstRemoves);
+    await started.promise;
+    const competing = second.persist(!firstRemoves);
+    release.resolve();
+    await Promise.all([pending, competing]);
+
+    const body = second.parts.body;
+    assert.equal(body.querySelector(".mask-status").textContent, "DTM.Conflict");
+    assert.equal(body.querySelector('[name="radius"]').value, 10);
+    assert.deepEqual(api.masks.get(sourcePath), firstRemoves ? null : {...original, radius: 0.15});
+    assert.equal(writeAttempts, 1);
+    await Promise.all([first.close(), second.close()]);
+  });
+}
 
 test("an unsupported image keeps the previous draft tied to its exact path", async t => {
   startWorld(true);

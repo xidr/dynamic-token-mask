@@ -2,6 +2,8 @@ export const MODULE_ID = "dynamic-token-mask";
 export const SETTING_KEY = "masks";
 export const CHANGE_HOOK = `${MODULE_ID}.masksChanged`;
 
+export class MaskConflictError extends Error {}
+
 function validateSource(src) {
   if (typeof src !== "string" || !src.trim() || src.includes("*")) {
     throw new TypeError("A concrete image path is required, not a wildcard pattern.");
@@ -92,10 +94,10 @@ export class MaskStore {
     return [...this.#read().values()];
   }
 
-  save(input) {
+  save(input, {expected} = {}) {
     // Copy and validate before queuing: caller mutations cannot change a pending save.
     const mask = validateMask(input);
-    return this.#write(async records => {
+    return this.#write(mask.src, expected, async records => {
       if (JSON.stringify(records.get(mask.src)) === JSON.stringify(mask)) return {...mask};
       records.set(mask.src, mask);
       await this.#persist(records);
@@ -103,19 +105,26 @@ export class MaskStore {
     });
   }
 
-  remove(src) {
+  remove(src, {expected} = {}) {
     validateSource(src);
-    return this.#write(async records => {
+    return this.#write(src, expected, async records => {
       if (!records.delete(src)) return false;
       await this.#persist(records);
       return true;
     });
   }
 
-  #write(operation) {
+  #write(src, expected, operation) {
+    // An omitted expectation permits any state. Null expects no saved mask.
+    const expectedMask = expected == null ? expected : validateMask(expected);
     const result = this.#queue.then(() => {
       if (!this.#canWrite()) throw new Error("Only a GM in a ready world can change masks.");
-      return operation(this.#read());
+      const records = this.#read();
+      if (expectedMask !== undefined
+        && JSON.stringify(records.get(src) ?? null) !== JSON.stringify(expectedMask)) {
+        throw new MaskConflictError("The saved mask changed after it was loaded.");
+      }
+      return operation(records);
     });
     // Serialize this client's writes without poisoning the queue after a failed save.
     this.#queue = result.catch(() => {});

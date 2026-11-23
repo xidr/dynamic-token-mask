@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {MaskStore, validateMask} from "../scripts/mask-store.mjs";
+import {MaskConflictError, MaskStore, validateMask} from "../scripts/mask-store.mjs";
 
 const mask = (src = "tokens/a.webp") => ({src, centerX: 0.5, centerY: 0.5,
   radius: 0.5, imageWidth: 800, imageHeight: 400});
@@ -59,6 +59,24 @@ test("reports affected paths for local and remote changes, skips unchanged saves
   assert.deepEqual(h.events[1], ["tokens/a.webp", "tokens/b.webp"]);
   assert.equal(await h.store.remove("tokens/b.webp"), true);
   assert.equal(h.store.get("tokens/b.webp"), null);
+});
+
+test("conditional writes distinguish expected absence and copy the caller's snapshot", async () => {
+  const {store, events} = setup();
+  const initial = mask();
+  await store.save(initial, {expected: null});
+  await assert.rejects(store.save(initial, {expected: null}), MaskConflictError);
+
+  const snapshot = store.get(initial.src);
+  const replacement = {...initial, radius: 0.3};
+  const pending = store.save(replacement, {expected: snapshot});
+  snapshot.radius = 0.1;
+  assert.deepEqual(await pending, replacement);
+
+  await assert.rejects(store.remove(initial.src, {expected: initial}), MaskConflictError);
+  assert.deepEqual(store.get(initial.src), replacement);
+  assert.equal(await store.remove(initial.src), true);
+  assert.deepEqual(events, [[initial.src], [initial.src], [initial.src]]);
 });
 
 test("read access remains available while GM writes are denied", async () => {

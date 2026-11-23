@@ -1,6 +1,6 @@
 import {constrainCircle, isSupportedStaticImage, toCircle, toRecord} from "./mask-geometry.mjs";
 import {drawCrop} from "./mask-renderer.mjs";
-import {MODULE_ID} from "./mask-store.mjs";
+import {MaskConflictError, MODULE_ID} from "./mask-store.mjs";
 
 const {ApplicationV2, HandlebarsApplicationMixin} = foundry.applications.api;
 const localize = key => game.i18n.localize("DTM." + key);
@@ -256,7 +256,7 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     const values = {centerX: 100 * (x / width), centerY: 100 * (y / height),
       radius: radiusPercent, radiusSlider: radiusPercent};
     for (const [name, value] of Object.entries(values)) {
-      if (inputs[name] !== activeInput) inputs[name].value = Number(value.toPrecision(12));
+      if (name === "radiusSlider" || inputs[name] !== activeInput) inputs[name].value = Number(value.toPrecision(12));
     }
   }
 
@@ -339,23 +339,24 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#writing = true;
     this.#syncControls();
     try {
-      if (JSON.stringify(this.#store.get(this.#src)) !== JSON.stringify(this.#snapshot)) {
-        this.#status("Conflict", true);
-        return;
-      }
+      const options = {expected: this.#snapshot};
       if (remove) {
-        await this.#store.remove(this.#src);
+        await this.#store.remove(this.#src, options);
         this.#snapshot = null;
       } else {
         const {width, height} = this.#image;
         const unchanged = this.#circle === this.#originalCircle && this.#snapshot?.imageWidth === width
           && this.#snapshot.imageHeight === height;
         const record = unchanged ? this.#snapshot : toRecord(this.#src, this.#circle, width, height);
-        this.#snapshot = await this.#store.save(record);
+        this.#snapshot = await this.#store.save(record, options);
         this.#originalCircle = this.#circle;
       }
       this.#status(remove ? "Removed" : "Saved");
     } catch (error) {
+      if (error instanceof MaskConflictError) {
+        this.#status("Conflict", true);
+        return;
+      }
       console.error(MODULE_ID + " | Could not write mask", error);
       this.#status(remove ? "RemoveFailed" : "SaveFailed", true);
     } finally {
