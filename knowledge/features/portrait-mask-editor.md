@@ -22,6 +22,7 @@ Use a GM-only settings menu and a ready-world API that can open the same editor 
 ## Behavior
 
 - Open **Portrait Mask Editor** from Configure Settings. Enter the exact image path or choose it with the image picker, then select **Load Image**. To open directly after Foundry is ready, call `await game.modules.get("dynamic-token-mask").api.openEditor(src)` as a GM. It loads the supplied path after building the editor.
+- Open the editor with an image’s edit button in the built-in file picker. The editor loads that row’s path and returns focus to the button on close if it is still connected. See [File picker mask controls](file-picker-mask-controls.md).
 - Use a static PNG, JPEG or WebP accessible by an HTTP(S) URL or relative path. The editor checks the file container before attempting to decode it. It rejects wildcard paths and reports unsupported or unreadable sources. The exact path identifies the persisted mask, including case and encoding.
 - Drag the center to move the circle and the right handle to resize it. The numeric fields express the center as percentages of width and height, and the radius field and slider as a percentage of the shorter side. The circle stays inside the source. **Reset Circle** restores the centered default. A replacement image with different dimensions prompts a review before saving the refitted circle.
 - The square preview displays both the source's transparency and the transparent area outside the circle on a checkerboard. Foundry applies the token's own texture settings when fitting that square.
@@ -29,7 +30,7 @@ Use a GM-only settings menu and a ready-world API that can open the same editor 
 
 ## Out of scope
 
-Per-image edit controls and indicators inside the native file picker, animation, dynamic rings and token-specific fit previews. Simultaneous edits from separate GM browsers still follow the world setting's concurrency limits. See [File picker integration](../reference/file-picker-integration.md) and [Mask storage](../reference/mask-storage.md).
+Animation, dynamic rings and token-specific fit previews. Simultaneous edits from separate GM browsers still follow the world setting's concurrency limits. See [Mask storage](../reference/mask-storage.md).
 
 ## Implementation
 

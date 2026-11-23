@@ -4,53 +4,40 @@ created: 2026-10-22
 updated: 2026-11-23
 tags: [foundry, file-picker, integration]
 status: active
-source: Installed Foundry 14.367 client source and templates; inspection only
+source: Installed Foundry 14.369 client source and templates, scripts/mask-file-picker.mjs and tests/mask-file-picker.test.mjs
 ---
 
 # File picker integration
 
-**TL;DR:** The built-in v14 file picker can be augmented through `renderFilePicker` without replacing its class or templates. Add per-image edit controls and mask indicators to existing file entries. This is a source-verified integration plan, not a runtime-tested implementation.
+**TL;DR:** The picker adapter uses the built-in ApplicationV2 render and close hooks. Each edit button uses its row’s exact `data-path`. The adapter updates indicators directly when masks change.
 
-## Verified extension points
+## Foundry extension points
 
-Application paths below are relative to `/opt/foundry/foundryvtt`.
+Application paths below are relative to `/opt/foundry/foundryvtt`. These hooks and template details were inspected in Foundry 14.369.
 
-- `client/applications/apps/file-picker.mjs`: `FilePicker` extends the Handlebars ApplicationV2 mixin. Its namespace is `foundry.applications.apps.FilePicker`; new instances should respect `.implementation` as the core file input does.
-- `client/applications/api/application.mjs`, render lifecycle and `#callHooks`: the render hook is `renderFilePicker(app, element, context, options)`. `element` is a native HTMLElement, not jQuery. Parent-class hook dispatch also supports ordinary subclasses, subject to their application inheritance boundary.
-- `templates/apps/file-picker/body.hbs`: all four views (`list`, `thumbs`, `tiles`, `images`) expose `li[data-file][data-path]`; directories use `data-directory`. Each file row has `data-action="pickFile"`.
-- `FilePicker._prepareContext`: `context.files` contains `url`, `name`, `img` and `icon`. `url` is the same value put in the row's `data-path` and subsequently selected by Foundry. Use this path as the image association, not the display name, thumbnail URL or reconstructed directory path. Preserve case and URL encoding; do not decode the storage key.
-- `FilePicker.browse`: directory/source navigation renders new content. `#onChangeDisplayMode` renders only the body. Render integration must handle partial rerenders and unchanged rows without duplicating controls/listeners.
-- `FilePicker.#onPickFile`: sets the picked row and file input. `#onSubmit` invokes the selection callback and closes the picker.
-- `ApplicationV2.#onClick`: dispatches the closest `data-action` using a listener on the application root. An unhandled click inside a file row reaches the native file-selection action.
-- `client/applications/elements/file-picker.mjs`: core file inputs open `FilePicker.implementation`, so integration reaches standard image fields without adding separate token-sheet controls in this phase.
+- `client/applications/apps/file-picker.mjs` implements `foundry.applications.apps.FilePicker` with the Handlebars ApplicationV2 mixin. Core file inputs in `client/applications/elements/file-picker.mjs` open `FilePicker.implementation`.
+- `client/applications/api/application.mjs` emits `renderFilePicker(app, element, context, options)` with a native element. Its parent-hook dispatch can also reach subclasses with compatible markup. The adapter also listens for `closeFilePicker`.
+- `templates/apps/file-picker/body.hbs` declares the list, thumbnail, tile and image views. File rows in `section[data-files] .files-list` expose `data-file`, `data-path` and `data-action="pickFile"`. Foundry prepares the path as `context.files[].url` and uses it when choosing a file. The row name serves as the translated control’s display label.
+- Browsing can replace content and switching views renders the body. Native click dispatch finds the closest `data-action` on the application root. Native file selection updates the picked row and input, and submission invokes the selection callback.
 
-Official reference: https://foundryvtt.com/api/v14/classes/foundry.applications.apps.FilePicker.html
-
-## Recommended adapter
-
-Register `renderFilePicker` and `closeFilePicker`. On render, require an active world and a GM; inspect actual file entries and image eligibility rather than relying only on the picker's type (`any` can contain images). Skip folder-only browsing and unsupported resources.
-
-For each eligible row, insert a module-owned wrapper with `.dynamic-token-mask`, a `type="button"` editor control and a saved-mask indicator. Use translated accessible labels and textContent/DOM construction for filenames. Style within the module wrapper so core picker layout is not globally changed. Support all four views and keyboard activation.
-
-Attach the button click handler directly to the button; call preventDefault and stopPropagation before opening the editor. Do not submit the parent form, call the native selection callback, alter its file input, or install a competing `pickFile` action. Stop drag initiation from the edit control as needed; preserve ordinary row dragging. A close action on the editor should return focus to its opener if still connected.
-
-Decoration must be idempotent: mark inserted controls, bind each once, and update existing indicators. Keep open picker references only while needed and remove them on close. On mask changes, update matching indicators directly instead of rebrowsing/rerendering the picker and disturbing search, scroll or selection. Read current records from the storage service rather than retaining stale record objects in button closures.
-
-Use the file path exposed by the row. Do not enumerate folders separately or recursively, and do not load every full-resolution image merely to decorate the browser. Animated WebP and PNG can share static extensions. Use extensions as a preliminary filter. The editor checks the file container before decoding.
-
-## Compatibility boundaries and verification
-
-The render hook is an extension point; row selectors are version-specific template details. Keep selectors in one adapter. If a replacement file browser does not expose compatible rows, do nothing gracefully; third-party picker compatibility is not established. No prototype patches, replacement templates or new dependency are required by the inspected built-in picker.
-
-Before shipping, test all four views; folder/source changes; partial rerenders; search; multiple picker windows; spaces, Unicode and encoded paths; non-image entries; keyboard clicks; normal selection/submission; drag/upload behavior; GM/player gating; indicators after save/remove; and cleanup after close. Include S3 path behavior when a test source is available. No world has been activated and no browser runtime test was performed during inspection.
+[Foundry FilePicker API](https://foundryvtt.com/api/v14/classes/foundry.applications.apps.FilePicker.html)
 
 ## Adapter contract
 
-The storage service and portrait editor are implemented. The planned adapter can open an editor with `game.modules.get("dynamic-token-mask").api.openEditor(src)` using the row path. It can query `api.masks.has(src)` for indicators and listen for `dynamic-token-mask.masksChanged` to receive affected paths. Storage and token rendering remain in their respective services.
+- `scripts/main.js` passes the mask store and existing editor entry point into `MaskFilePicker`. The adapter requires a ready world and a GM and skips folder pickers.
+- Candidate filtering requires a concrete HTTP(S) URL or a path that resolves to one, with a PNG, JPEG or WebP pathname. The editor checks the file container before decoding. The adapter passes the original path through to the editor and mask store, preserving case, encoding and query parameters.
+- The row keeps its native selection and drag handlers. A directly bound `type="button"` cancels its own click and drag start before they reach the row. Browser button behavior supplies Enter and Space activation. Styles are anchored to the module wrapper or to rows containing it.
+- `openMaskEditor(src, {opener})` loads the path and uses the opener document’s Foundry window ID when available. The editor focuses the opener on close if the button is still connected. Settings and API callers can keep using the default application window.
+- On render, the adapter reuses controls on unchanged rows, removes obsolete controls and releases closed or disconnected picker roots. The `dynamic-token-mask.masksChanged` hook supplies changed paths. The adapter reads the current saved paths from `masks.list()` and updates matching indicators in place, preserving the picker’s search, scroll and selection.
+
+## Compatibility boundaries
+
+The row selectors depend on built-in v14 markup. Picker implementations with different markup receive no controls. Third-party pickers and S3 sources have no recorded live verification. See the feature record for automated evidence and the outstanding test-world checks. [File picker mask controls](../features/file-picker-mask-controls.md)
 
 ## Related
 
-- [the circular mask design](../topics/module/circular-mask-design.md)
+- [Circular mask design](../topics/module/circular-mask-design.md)
+- [Augment native file picker rows](../decisions/2026-11-23-native-file-picker-rows.md)
 - [Mask storage](mask-storage.md)
 - [Portrait mask editor](../features/portrait-mask-editor.md)
 - [Develop and validate](../how-to/develop-and-validate.md)

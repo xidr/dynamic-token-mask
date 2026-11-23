@@ -11,7 +11,7 @@ Use the **Read when** hints to find the notes you need. The [authoring guide](ho
 ## Reference
 
 - [Environment](reference/environment.md) — checkout paths, live-directory constraints and languages. Read when: locating or configuring the module.
-- [File picker integration](reference/file-picker-integration.md) — v14 hooks, image paths and mask controls. Read when: implementing the picker or editor.
+- [File picker integration](reference/file-picker-integration.md) — v14 hooks, row paths and adapter lifecycle. Read when: changing the picker integration.
 - [IDE tools](reference/ide-tools.md) — project targeting and connection checks. Read when: inspecting symbols through the IDE.
 - [Mask storage](reference/mask-storage.md) — implemented schema, API, validation and concurrency limits. Read when: calling or changing the mask store.
 - [Working agreements](reference/working-agreements.md) — project approvals and handling soft rule boundaries. Read when: designing an interactive flow or handing off work.
@@ -26,6 +26,7 @@ Use the **Read when** hints to find the notes you need. The [authoring guide](ho
 
 ## Features
 
+- [File picker mask controls](features/file-picker-mask-controls.md) — GM edit buttons, indicators and validation. Read when: using or verifying picker controls.
 - [Per-image mask storage](features/per-image-mask-storage.md) — shipped behavior and limits. Read when: changing how masks are stored or updated.
 - [Portrait mask editor](features/portrait-mask-editor.md) — GM image framing, crop preview and shared-mask editing. Read when: changing or using the editor.
 - [Static token renderer](features/static-token-renderer.md) — shared crops for ordinary static scene tokens. Read when: changing or verifying token rendering.
@@ -36,10 +37,11 @@ No open bug records.
 
 ## Gotchas
 
-- [Gotchas](gotchas.md) — resolved paths and concurrent writers. Read when: looking up known traps.
+- [Gotchas](gotchas.md) — resolved paths, concurrent writers and application windows. Read when: looking up known traps.
 
 ## Decisions
 
+- [Augment native file picker rows](decisions/2026-11-23-native-file-picker-rows.md) — hook-based integration, exact paths and window ownership. Read when: changing the picker integration.
 - [Common conventions for module knowledge](decisions/2026-11-23-v13-knowledge-conventions.md) — relative links, six templates and decision metadata. Read when: writing, moving or reviewing notes.
 - [Knowledge base and workflow setup](decisions/2026-11-23-kb-and-workflow-setup.md) (replaced in part by [Common conventions for module knowledge](decisions/2026-11-23-v13-knowledge-conventions.md)) — the successor adopts relative Markdown links, `INDEX.md`, six templates and standardized decision records. Read when: tracing Codex and Gemini roles, approvals or calibration.
 - [Share crop drawing and check editor snapshots in the write queue](decisions/2026-11-23-portrait-editor-preview-and-writes.md) — shared preview drawing and conditional writes. Read when: changing how the editor draws crops or saves and removes masks.

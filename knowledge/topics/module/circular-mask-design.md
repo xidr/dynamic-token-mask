@@ -9,9 +9,9 @@ source: User requirements and installed Foundry VTT 14.367 client/common source 
 
 # Circular mask design
 
-Last verified: 2026-11-23 (storage, renderer and editor code and tests, plus Foundry 14.369 browser results). Foundry source observations below date to 2026-10-22.
+Last verified: 2026-11-23 (picker adapter and editor entry point). Storage, renderer and settings editor verification in Foundry 14.369 dates to 2026-11-23. Foundry source observations below date to 2026-10-22.
 
-**TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [mask storage](../../reference/mask-storage.md), [Static token renderer](../../features/static-token-renderer.md) and [Portrait mask editor](../../features/portrait-mask-editor.md) for the implemented behavior, and [File picker integration](../../reference/file-picker-integration.md) for the proposed per-image controls.
+**TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [mask storage](../../reference/mask-storage.md), [Static token renderer](../../features/static-token-renderer.md) and [Portrait mask editor](../../features/portrait-mask-editor.md) for the implemented behavior, and [File picker mask controls](../../features/file-picker-mask-controls.md) for the per-image controls.
 
 ## Confirmed requirements
 
@@ -51,7 +51,7 @@ The ApplicationV2 editor opens from GM settings or the module's `openEditor(src)
 
 Edits remain local until Save or Remove. An inline notice explains the effect on eligible tokens throughout the world. Each write compares the loaded mask with the current mask within the store's write queue. See [Portrait mask editor](../../features/portrait-mask-editor.md) and [mask storage](../../reference/mask-storage.md).
 
-Per-image file-picker controls are planned in [File picker integration](../../reference/file-picker-integration.md). Future token shortcuts should use the effective rendered image, including an explicit ring subject.
+The built-in file picker also opens the editor on the exact path of an eligible row. The adapter handles entry controls, while the editor validates image content. See [File picker integration](../../reference/file-picker-integration.md). Future token shortcuts should use the effective rendered image, including an explicit ring subject.
 
 ## Original rendering proposal
 

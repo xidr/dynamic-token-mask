@@ -4,23 +4,26 @@ A system-independent Foundry VTT module for dynamic circular token masking.
 
 ## Status
 
-See the [development roadmap](ROADMAP.md) for completed milestones, planned file-picker integration and broader Foundry validation.
+See the [development roadmap](ROADMAP.md) for implemented milestones and pending Foundry validation.
 
 The module stores one circular mask per image path in each world. Ordinary static scene tokens use the selected circle as a cropped portrait while retaining their original image path and token dimensions. In a Foundry VTT 14.369 test world, saving a mask updated two matching tokens in both GM and player sessions. The crops persisted across reconnects and reloads, and removing the mask restored the original portraits in both sessions. [Test-world procedure](knowledge/how-to/verify-static-token-masks.md)
 
-In a ready world, a GM can open **Portrait Mask Editor** from Configure Settings. Enter the exact image path or browse for a static PNG, JPEG or WebP, then select **Load Image**. Move or resize the circle with the drag handles or numeric controls and check the square crop on the checkerboard. **Save Mask** and **Remove Mask** update eligible tokens using that image path throughout the world. **Cancel** discards the current draft. On Foundry 14.369, both GM and player token textures matched the wide and transparent PNG preview samples. At 1400×950, all four footer actions stayed visible after loading a wide portrait. Per-image buttons and saved-mask indicators in the file picker are planned. [Editor feature record](knowledge/features/portrait-mask-editor.md) · [Storage contract](knowledge/reference/mask-storage.md)
+In a ready world, a GM can open **Portrait Mask Editor** from Configure Settings. Enter the exact image path or browse for a static PNG, JPEG or WebP, then select **Load Image**. Move or resize the circle with the drag handles or numeric controls and check the square crop on the checkerboard. **Save Mask** and **Remove Mask** update eligible tokens using that image path throughout the world. **Cancel** discards the current draft. On Foundry 14.369, both GM and player token textures matched the wide and transparent PNG preview samples. At 1400×950, all four footer actions stayed visible after loading a wide portrait. [Editor feature record](knowledge/features/portrait-mask-editor.md) · [Storage contract](knowledge/reference/mask-storage.md)
+
+In the built-in file picker, a ready-world GM can use the portrait icon beside a PNG, JPEG or WebP candidate to open the editor for that exact path. A check mark indicates a saved mask. The control is available in list, thumbnail, tile and image views. The standard file selection still works on the row. Picker behavior has automated coverage and was exercised in an offline Chromium fixture using Foundry 14.369 styles. Live picker verification is pending. [File picker mask controls](knowledge/features/file-picker-mask-controls.md)
 
 ## Development
 
 Open this folder as its own IDE project and Git repository.
 
 - `module.json`: Foundry module manifest.
-- `scripts/main.js`: registers storage and the editor menu, exposes the module API and wires renderer hooks.
+- `scripts/main.js`: registers storage and the editor menu, exposes the module API and wires renderer and picker hooks.
 - `scripts/mask-store.mjs`: validated world-level mask persistence.
 - `scripts/mask-renderer.mjs`: shared circular crop drawing and token mesh texture lifecycle.
 - `scripts/mask-editor.mjs`, `scripts/mask-geometry.mjs`: GM editor, image validation and circle geometry.
+- `scripts/mask-file-picker.mjs`: GM-only controls and saved-mask indicators in the built-in picker.
 - `templates/mask-editor.hbs`: editor controls and preview.
-- `tests/`: storage, renderer and editor tests (`node --test`).
+- `tests/`: storage, renderer, editor and picker tests (`node --test`).
 - `styles/module.css`: module UI styles.
 - `lang/en.json`, `lang/ru.json`: translations.
 

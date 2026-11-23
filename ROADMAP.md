@@ -1,6 +1,6 @@
 # Dynamic Token Mask roadmap
 
-The next milestone is for a GM to open a portrait in Foundry’s file picker, frame the subject, and see the result on every ordinary static token that uses that image in the world. Checked items reflect implementation and verification through November 23, 2026. The remaining milestones are in delivery order.
+A GM can open a portrait in Foundry’s file picker and frame the subject for all ordinary static tokens using that image in the world. The next milestone is to verify the picker workflow in the designated Foundry world. Status reflects evidence through November 23, 2026.
 
 ## 1. Store and render a mask — verified
 
@@ -16,12 +16,12 @@ The next milestone is for a GM to open a portrait in Foundry’s file picker, fr
 - [x] Verified wide and transparent PNG previews against 1×1 token textures in GM and player sessions, including Cancel, reopening, reload and removal. [Editor runtime procedure](knowledge/how-to/verify-portrait-mask-editor.md)
 - [x] Verified Reset, Save, Remove and Cancel after loading a 400×200 portrait at the default window position in a 1400×950 viewport. [Footer regression](knowledge/bugs/fixed/editor-actions-below-viewport.md)
 
-## 3. Open the editor from Foundry’s file picker
+## 3. Open the editor from Foundry’s file picker — implemented, live checks pending
 
-- [ ] Give GMs an edit button and a saved-mask indicator on eligible images in list, thumbnail, tile and image views. Use the exact path Foundry selects, including case and encoding.
-- [ ] Keep editing separate from choosing a file. Verify that opening the editor by mouse or keyboard preserves the picker selection, and that ordinary selection, submission and dragging still work.
-- [ ] Refresh indicators after save or removal in every open picker. Check navigation, search and view changes for duplicate buttons or lost selection. Verify player accounts have no edit controls.
-- [ ] Provide matching English and Russian labels, keyboard access and focus return when the editor closes. [Picker integration plan](knowledge/reference/file-picker-integration.md)
+- [x] Add a GM-only edit button and a saved-mask indicator in list, thumbnail, tile and image views. Pass the exact path Foundry selects, including case and encoding.
+- [x] Update matching indicators in all open pickers after saves and removals. Cover selection and submission isolation, drag handling, partial renders, picker closure and focus return in automated tests. The buttons have matching English and Russian labels. [File picker mask controls](knowledge/features/file-picker-mask-controls.md)
+- [x] Exercise click hit-testing and mouse, Enter and Space activation in all four views in an offline Chromium fixture using Foundry 14.369 styles.
+- [ ] In Foundry, verify GM and player access, all four views, normal selection, submission and drag, keyboard focus return, navigation, search, indicator changes in multiple pickers, a detached picker, and exact paths with case and encoding. [Picker live acceptance](knowledge/features/file-picker-mask-controls.md#live-acceptance)
 
 ## 4. Verify the first UI release
 
