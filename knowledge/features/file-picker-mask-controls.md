@@ -37,11 +37,13 @@ On 2026-11-23, all 40 Node tests passed. Picker tests cover gating, exact paths,
 
 ## Live acceptance
 
-After merge approval, use a designated Foundry world to check:
+Use a designated Foundry world for these checks.
 
 - As GM, open eligible images in all four views, including paths with spaces, Unicode or existing encoding. Confirm the editor opens the exact path Foundry selects, including case.
 - Open with mouse, Enter and Space. Check the selection and file field, then close the editor and confirm that focus returns. Repeat from a detached picker. Confirm normal row selection, submission and drag.
 - Open two pickers on matching paths. Save and remove a mask and confirm the indicators update while selection and search stay intact. Change folders, sources and views to check for duplicate controls. Check that unsupported files and directories lack controls, unrelated rows keep their indicators, and drag-and-drop upload still works where available.
 - Connect as a player, confirm no edit controls appear, and compare matching token crops after a GM edits, saves and removes a mask. Check Cancel, scene changes and browser reloads. Try an S3 source if the designated world provides one.
 
-Live picker checks are pending. [Develop and validate](../how-to/develop-and-validate.md)
+Mouse, Enter and Space activation were exercised across the four views. Every view retained the selected file and returned focus on close. Folder navigation, search, native submission and uploading a PNG by drop passed. A detached picker opened its editor in the same window and regained focus on close.
+
+Live checks on Foundry 14.369 used a transparent PNG with a Cyrillic filename, a space and an uppercase extension. The GM opened the encoded path from the picker and saved a crop. Both open pickers showed the saved indicator. Two matching tokens used derived textures on both GM and player clients, while a third token retained its original texture. Cancel discarded a subsequent radius change. After both clients reloaded, reopening showed the saved radius. Removal cleared the indicator and restored original textures on both clients. In Foundry’s tile picker, dragging the file row produced the exact native tile texture path and starting a drag on its edit button cancelled the drag. The player account lacked file-browsing permission. Its picker showed no mask controls. [Develop and validate](../how-to/develop-and-validate.md)

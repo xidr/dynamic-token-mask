@@ -16,12 +16,12 @@ A GM can open a portrait in Foundry’s file picker and frame the subject for al
 - [x] Verified wide and transparent PNG previews against 1×1 token textures in GM and player sessions, including Cancel, reopening, reload and removal. [Editor runtime procedure](knowledge/how-to/verify-portrait-mask-editor.md)
 - [x] Verified Reset, Save, Remove and Cancel after loading a 400×200 portrait at the default window position in a 1400×950 viewport. [Footer regression](knowledge/bugs/fixed/editor-actions-below-viewport.md)
 
-## 3. Open the editor from Foundry’s file picker — implemented, live checks pending
+## 3. Open the editor from Foundry’s file picker — live checks on Foundry 14.369
 
 - [x] Add a GM-only edit button and a saved-mask indicator in list, thumbnail, tile and image views. Pass the exact path Foundry selects, including case and encoding.
 - [x] Update matching indicators in all open pickers after saves and removals. Cover selection and submission isolation, drag handling, partial renders, picker closure and focus return in automated tests. The buttons have matching English and Russian labels. [File picker mask controls](knowledge/features/file-picker-mask-controls.md)
 - [x] Exercise click hit-testing and mouse, Enter and Space activation in all four views in an offline Chromium fixture using Foundry 14.369 styles.
-- [ ] In Foundry, verify GM and player access, all four views, normal selection, submission and drag, keyboard focus return, navigation, search, indicator changes in multiple pickers, a detached picker, and exact paths with case and encoding. [Picker live acceptance](knowledge/features/file-picker-mask-controls.md#live-acceptance)
+- [x] Verified all four views, selection, submission, tile drag, PNG upload, keyboard focus return, navigation, search, saved indicators in two GM pickers, a detached picker and an encoded Cyrillic path with a space and uppercase extension. Both clients displayed token updates. The player account lacked file-browsing permission. [Picker live acceptance](knowledge/features/file-picker-mask-controls.md#live-acceptance)
 
 ## 4. Verify the first UI release
 

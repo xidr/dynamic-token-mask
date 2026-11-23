@@ -9,9 +9,9 @@ source: Project setup conversation, 2026-10-22, and scripts/main.js, scripts/mas
 
 # Module overview
 
-Last verified: 2026-11-23 (picker adapter, automated tests and offline Chromium fixture with Foundry 14.369 styles). The renderer and settings editor were checked in a Foundry 14.369 test world on 2026-11-23.
+Last verified: 2026-11-23 (picker adapter, automated tests and live Foundry 14.369 GM and player clients). The renderer and settings editor were checked in a Foundry 14.369 test world on 2026-11-23.
 
-**TL;DR:** Dynamic Token Mask stores a circle per image path and renders circular crops on ordinary static scene tokens. GMs manage masks through the API or the [Portrait Mask Editor](../../features/portrait-mask-editor.md), including through per-image buttons in the [built-in file picker](../../features/file-picker-mask-controls.md). Live picker checks are pending. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. The editor preview matched sampled token pixels for opaque and transparent PNG crops in both sessions. The editor refits its window when loading a portrait pushes the footer below the viewport. See [editor-actions-below-viewport](../../bugs/fixed/editor-actions-below-viewport.md).
+**TL;DR:** Dynamic Token Mask stores a circle per image path and renders circular crops on ordinary static scene tokens. GMs manage masks through the API or the [Portrait Mask Editor](../../features/portrait-mask-editor.md), including through per-image buttons in the [built-in file picker](../../features/file-picker-mask-controls.md). Saving from the picker updated matching indicators in two open GM pickers and matching token textures on both clients. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. The editor preview matched sampled token pixels for opaque and transparent PNG crops in both sessions. The editor refits its window when loading a portrait pushes the footer below the viewport. See [editor-actions-below-viewport](../../bugs/fixed/editor-actions-below-viewport.md).
 
 ## Details
 
