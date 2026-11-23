@@ -19,4 +19,4 @@ Open the empty editor from Configure Settings at its default position. Load a 40
 
 Foundry positioned the empty editor before the image workspace expanded. The editor now calls ApplicationV2.setPosition() when the updated window extends below the viewport.
 
-The original footer spanned y=950.25–978.25. With the task branch script loaded in the same Foundry 14.369 GM browser workflow, all four buttons spanned y=905–933. Without dragging the window, Reset restored radius 50%, Save created the test mask, Remove deleted it and Cancel closed the editor. See [[verify-portrait-mask-editor]].
+The original footer spanned y=950.25–978.25. With the task branch script loaded in the same Foundry 14.369 GM browser workflow, all four buttons spanned y=905–933. Without dragging the window, Reset restored radius 50%, Save created the test mask, Remove deleted it and Cancel closed the editor. See [verify-portrait-mask-editor](../../how-to/verify-portrait-mask-editor.md).
