@@ -7,3 +7,5 @@ Approved CLI workflow, branch task/kb-conventions, base d4abbbb. Standard builde
 4. Approved checker fixes after integration with main d10c582: require exactly one primary template entry per expected template under Templates, verify INDEX.md by its stored directory-entry spelling on case-insensitive filesystems, and validate links with inline-code labels while ignoring example links inside code. Run regression probes and a fresh CLI review.
 
 5. Approved follow-up: detect stale path substrings inside inline commands, including relative paths, while exempting literal Markdown link examples. Use shared ATX heading parsing for Templates section boundaries, including correctly indented headings. Verify both regressions and existing controls in scratch copies, then obtain fresh CLI review before merge.
+
+6. Approved final-review fix: recognize literal Markdown links with empty or balanced nested labels in inline code. Mask only the example and continue detecting adjacent stale command paths. Preserve existing checker behavior elsewhere. Test and send the committed diff to a fresh CLI reviewer before merge.
