@@ -9,9 +9,9 @@ source: Project setup conversation, 2026-10-22, and scripts/main.js, scripts/mas
 
 # Module overview
 
-Last verified: 2026-11-23 (editor code and Node tests, plus previous Foundry 14.369 GM and player renderer sessions)
+Last verified: 2026-11-23 (Foundry 14.369 GM and player renderer checks and GM editor footer regression)
 
-**TL;DR:** Dynamic Token Mask stores a circle per image path and renders circular crops on ordinary static scene tokens. GMs manage masks through the API or the [[features/portrait-mask-editor|Portrait Mask Editor]]. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. Editor runtime checks are pending.
+**TL;DR:** Dynamic Token Mask stores a circle per image path and renders circular crops on ordinary static scene tokens. GMs manage masks through the API or the [[features/portrait-mask-editor|Portrait Mask Editor]]. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. The editor preview matched sampled token pixels for opaque and transparent PNG crops in both sessions. The editor refits its window when loading a portrait pushes the footer below the viewport. See [[editor-actions-below-viewport]].
 
 ## Details
 

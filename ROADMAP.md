@@ -8,12 +8,13 @@ The next milestone is for a GM to open a portrait in Foundry’s file picker, fr
 - [x] Render the selected circle on ordinary static tokens while preserving the source path and token dimensions. Matching tokens can share the cropped texture. [Renderer record](knowledge/features/static-token-renderer.md)
 - [x] Verify the full API workflow on Foundry 14.369. A GM and player saw the same off-center crop on two tokens, retained it across reloads, and saw both originals return after removal. Both tokens kept their 1×1 footprint and remained targetable. [Live test procedure](knowledge/how-to/verify-static-token-masks.md)
 
-## 2. Frame a portrait in the editor — Foundry checks pending
+## 2. Frame a portrait in the editor — live checks on Foundry 14.369
 
 - [x] Open a static image in a GM-only ApplicationV2 editor. Start with an existing saved circle and let the GM move and resize it using drag handles or numeric controls.
 - [x] Draw the square crop on a checkerboard with the same circular clip and framing as the token renderer.
 - [x] Keep drafts local. Explain the world-wide effect of Save and Remove and bound the circle to the source. Report image and persistence failures while preserving the last saved mask. [Editor feature record](knowledge/features/portrait-mask-editor.md)
-- [ ] In the designated Foundry world, compare the preview with rendered 1×1 tokens for a wide off-center portrait and a portrait with transparency. Check Cancel, reopening, reload and removal. [Editor runtime procedure](knowledge/how-to/verify-portrait-mask-editor.md)
+- [x] Verified wide and transparent PNG previews against 1×1 token textures in GM and player sessions, including Cancel, reopening, reload and removal. [Editor runtime procedure](knowledge/how-to/verify-portrait-mask-editor.md)
+- [x] Verified Reset, Save, Remove and Cancel after loading a 400×200 portrait at the default window position in a 1400×950 viewport. [Footer regression](knowledge/bugs/fixed/editor-actions-below-viewport.md)
 
 ## 3. Open the editor from Foundry’s file picker
 
