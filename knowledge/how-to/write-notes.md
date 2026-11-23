@@ -40,7 +40,7 @@ When a later decision changes an earlier one, write a successor and keep the ear
 
 ## Check it worked
 
-Run from the worktree root with Bash and Python 3.9 or later. This checks active Markdown links and heading fragments, index coverage and order, the six templates, shared instructions and decision metadata. Inspect the diff against the previous revision to confirm that link labels, destinations, literals and decision reasoning survived the edit.
+Run from the worktree root with Bash and Python 3.9 or later. This checks active Markdown links and heading fragments, index coverage and display-label ordering, and the exact spelling of `knowledge/INDEX.md`. It also checks that each of the six templates has one primary entry under Templates and validates the shared instructions and decision metadata. Inspect the diff against the previous revision to confirm that link labels, destinations, literals and decision reasoning survived the edit.
 
 ```bash
 python3 - <<'CHECK'
@@ -56,6 +56,8 @@ index = vault / 'INDEX.md'
 templates = {'topic.md', 'how-to.md', 'reference.md', 'decision.md', 'bug.md', 'feature.md'}
 sections = ('Context', 'Decision', 'Alternatives', 'Consequences')
 shared_sections = ('What this is', 'Commands', 'Hard rules', 'Knowledge base')
+stale_paths = ('knowledge/index.md', 'templates/bug-report.md')
+inline_code = re.compile(r'(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)')
 link = re.compile(r'\[([^\]\n]+)\]\(\s*(<[^>\n]+>|[^\s)]*)'
                   r'(?:\s+["\'][^\n]*?["\'])?\s*\)')
 errors = []
@@ -75,11 +77,27 @@ def prose(text):
             yield number, line
 
 
+def mask_code(line):
+    # Keep the original offsets so link labels and targets can be read from the source.
+    return inline_code.sub(lambda span: '\0' * len(span[0]), line)
+
+
+def code_text(span):
+    text = span[2]
+    if text.startswith(' ') and text.endswith(' ') and text.strip(' '):
+        return text[1:-1]
+    return text
+
+
 def heading_anchors(path):
     counts = Counter()
     for _, line in prose(path.read_text()):
         if match := re.match(r'^ {0,3}#{1,6}\s+(.+?)\s*#*$', line):
-            title = link.sub(r'\1', match[1])
+            title = match[1]
+            for item in reversed(list(link.finditer(mask_code(title)))):
+                start, end = item.span(1)
+                title = title[:item.start()] + title[start:end] + title[item.end():]
+            title = inline_code.sub(code_text, title)
             slug = re.sub(r'[^\w -]', '', title.lower()).replace(' ', '-')
             yield f'{slug}-{counts[slug]}' if counts[slug] else slug
             counts[slug] += 1
@@ -148,10 +166,13 @@ for section in shared_sections:
         errors.append(f'AGENTS.md and GEMINI.md differ in {section}')
 
 template_dir = vault / 'templates'
+template_paths = {template_dir / name for name in templates}
+template_entries = Counter()
 actual = {path.relative_to(template_dir).as_posix() for path in template_dir.rglob('*.md')}
 if actual != templates:
     errors.append(f'Template inventory differs: {sorted(actual ^ templates)}')
-if not index.is_file() or (vault / 'index.md').exists():
+index_names = {path.name for path in vault.iterdir() if path.name.casefold() == index.name.casefold()}
+if index_names != {index.name} or not index.is_file():
     errors.append('Expected knowledge/INDEX.md with exact capitalization')
 
 notes = set(vault.rglob('*.md'))
@@ -159,18 +180,22 @@ sources = notes | set(repo.glob('*.md')) | set((repo / '.agents' / 'agents').glo
 for source in sorted(sources):
     if source.is_relative_to(vault / 'archive'):
         continue
+    in_templates = False
     last_label = ''
     for number, line in prose(source.read_text()):
         where = f'{source.relative_to(repo)}:{number}'
-        if line.startswith('## '):
+        if line.startswith(('# ', '## ')):
+            in_templates = line.rstrip() == '## Templates'
             last_label = ''
-        visible = re.sub(r'(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)', '', line)
+        visible = mask_code(line)
         if re.search(r'\[\[(?!/r(?:oll)?\s)[^\[\]]+\]\]', visible):
             errors.append(f'{where}: use a relative Markdown link')
-        if 'knowledge/index.md' in line or 'templates/bug-report.md' in line:
+        if (any(path in visible for path in stale_paths)
+                or any(code_text(span) in stale_paths for span in inline_code.finditer(line))):
             errors.append(f'{where}: stale knowledge path')
         for match in link.finditer(visible):
-            label, raw = match.groups()
+            start, end = match.span(2)
+            raw = line[start:end]
             parts = urlsplit(raw.strip('<>'))
             if parts.scheme or parts.netloc:
                 continue
@@ -185,15 +210,27 @@ for source in sorted(sources):
             in_overview = (source.name == '_overview.md' and source.is_relative_to(vault / 'topics')
                            and target.parent == source.parent and target != source)
             if match.start() == 2 and visible.startswith('- ') and (source == index or in_overview):
-                if label.casefold() < last_label:
+                start, end = match.span(1)
+                label = inline_code.sub(code_text, line[start:end]).casefold()
+                if label < last_label:
                     errors.append(f'{where}: index entries must be alphabetical within their section')
-                last_label = label.casefold()
+                last_label = label
+                if source == index and target in template_paths:
+                    if in_templates:
+                        template_entries[target.name] += 1
+                    else:
+                        errors.append(f'{where}: template entry {target.name} must be under Templates')
                 if target in notes and archived(target):
                     errors.append(f'{where}: move archived notes and fixed bugs out of the active index')
                 if target in notes and not target.is_relative_to(template_dir):
                     if 'Read when:' not in line or target in entries:
                         errors.append(f'{where}: expected one index entry with a reading hint')
                     entries[target] = line
+
+for name in sorted(templates):
+    if template_entries[name] != 1:
+        errors.append(f'knowledge/INDEX.md: expected one primary entry for templates/{name} '
+                      f'under Templates, found {template_entries[name]}')
 
 for note in sorted(notes - {index}):
     if not archived(note) and not note.is_relative_to(template_dir) and note not in entries:
