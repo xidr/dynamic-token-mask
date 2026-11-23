@@ -2,6 +2,8 @@
   "DTM": {
     "Title": "Portrait Mask Editor",
     "OpenEditor": "Open Editor",
+    "PickerEdit": "Edit portrait mask for {name}",
+    "PickerEditSaved": "Edit portrait mask for {name} (mask saved)",
     "MenuHint": "Frame a circular crop for a shared token portrait.",
     "Image": "Image path",
     "Load": "Load Image",

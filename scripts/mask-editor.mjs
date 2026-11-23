@@ -1,4 +1,4 @@
-import {constrainCircle, isSupportedStaticImage, toCircle, toRecord} from "./mask-geometry.mjs";
+import {constrainCircle, isSupportedStaticImage, resolveImageURL, toCircle, toRecord} from "./mask-geometry.mjs";
 import {drawCrop} from "./mask-renderer.mjs";
 import {MaskConflictError, MODULE_ID} from "./mask-store.mjs";
 
@@ -7,18 +7,8 @@ const localize = key => game.i18n.localize("DTM." + key);
 const canEditMasks = () => game.ready && game.user?.isGM === true;
 const NUMBER_FIELDS = ["centerX", "centerY", "radius", "radiusSlider"];
 
-function isConcreteImagePath(src, base) {
-  if (typeof src !== "string" || !src.trim() || src.includes("*") || src.trimStart().startsWith("#")) return false;
-  try {
-    const {protocol} = new URL(src, base);
-    return protocol === "http:" || protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-export async function openMaskEditor(src = "") {
-  const editor = new MaskEditor({src});
+export async function openMaskEditor(src = "", {opener} = {}) {
+  const editor = new MaskEditor({src, opener});
   await editor.render({force: true});
   return editor.rendered ? editor : null;
 }
@@ -53,10 +43,10 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   #closing = false;
 
   constructor(options = {}) {
-    const {src = "", ...applicationOptions} = options;
+    const {src = "", opener = document.activeElement, ...applicationOptions} = options;
     super(applicationOptions);
     this.#src = src;
-    this.#opener = document.activeElement;
+    this.#opener = opener;
   }
 
   get #store() { return game.modules.get(MODULE_ID).api.masks; }
@@ -151,7 +141,7 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     }
     const {source} = this.#view;
     const src = source.value;
-    if (!isConcreteImagePath(src, source.ownerDocument.baseURI)) {
+    if (!resolveImageURL(src, source.ownerDocument.baseURI)) {
       this.#status("InvalidSource", true);
       return;
     }

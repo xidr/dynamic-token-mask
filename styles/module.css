@@ -91,3 +91,39 @@
   align-items: center;
   gap: 0.5rem;
 }
+
+.dynamic-token-mask.mask-picker-control > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.3rem;
+}
+
+.dynamic-token-mask.mask-picker-control .mask-picker-status[hidden] {
+  display: none;
+}
+
+.files-list.details > li > .dynamic-token-mask.mask-picker-control {
+  float: inline-end;
+  margin-inline-start: 0.5rem;
+}
+
+.files-list.thumbs > li > .dynamic-token-mask.mask-picker-control {
+  flex: none;
+  order: 1;
+  align-self: center;
+  margin-inline-start: auto;
+}
+
+.files-list:is(.tiles, .images) > li:has(> .dynamic-token-mask.mask-picker-control) {
+  position: relative;
+}
+
+.files-list:is(.tiles, .images) > li > .dynamic-token-mask.mask-picker-control {
+  position: absolute;
+  inset-inline-end: 0.35rem;
+  inset-block-end: 0.35rem;
+}

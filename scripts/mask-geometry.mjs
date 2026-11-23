@@ -17,6 +17,16 @@ export function toRecord(src, circle, imageWidth, imageHeight) {
     radius: circle.radius / Math.min(imageWidth, imageHeight), imageWidth, imageHeight};
 }
 
+export function resolveImageURL(src, base) {
+  if (typeof src !== "string" || !src.trim() || src.includes("*") || src.trimStart().startsWith("#")) return null;
+  try {
+    const url = new URL(src, base);
+    return url.protocol === "http:" || url.protocol === "https:" ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Reject animated containers rather than silently authoring a mask against their first frame. */
 export function isSupportedStaticImage(buffer) {
   const bytes = new Uint8Array(buffer);

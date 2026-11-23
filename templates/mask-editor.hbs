@@ -28,7 +28,7 @@
   <footer class="mask-actions">
     <button type="button" data-action="reset" disabled>{{localize "DTM.Reset"}}</button>
     <button type="button" data-action="remove" disabled>{{localize "DTM.Remove"}}</button>
-    <button type="button" data-action="cancel">{{localize "DTM.Cancel"}}</button>
+    <button type="button" data-action="cancel"{{#if src}} autofocus{{/if}}>{{localize "DTM.Cancel"}}</button>
     <button type="button" data-action="save" disabled>{{localize "DTM.Save"}}</button>
   </footer>
 </div>
