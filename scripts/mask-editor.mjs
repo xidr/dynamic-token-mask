@@ -113,10 +113,10 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
       input.addEventListener("blur", () => this.#syncValues());
     }
 
+    if (this.#image) this.#showImage();
     this.#status(...this.#message);
     this.#syncControls();
-    if (this.#image) this.#showImage();
-    else if (options.isFirstRender && this.#src) void this.loadImage();
+    if (!this.#image && options.isFirstRender && this.#src) void this.loadImage();
   }
 
   #status(key, error = false) {
@@ -124,6 +124,10 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     const {status} = this.#view;
     status.textContent = key ? localize(key) : "";
     status.classList.toggle("error", error);
+
+    // Loading an image or wrapping a status message can grow the window after Foundry positions it.
+    const {element} = this;
+    if (element.getBoundingClientRect().bottom > element.ownerDocument.documentElement.clientHeight) this.setPosition();
   }
 
   #syncControls() {

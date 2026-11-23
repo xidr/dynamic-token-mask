@@ -60,6 +60,10 @@ globalThis.foundry = {applications: {api: {
         return this;
       }
       this.parts = {body: view((await this._prepareContext(options)).src)};
+      this.element = {
+        ownerDocument: {documentElement: {clientHeight: 950}},
+        getBoundingClientRect: () => ({bottom: 550})
+      };
       this.rendered = true;
       this._onRender({}, {isFirstRender: true});
       return this;
@@ -74,6 +78,7 @@ globalThis.foundry = {applications: {api: {
     _onRender() {}
     _preClose() {}
     _onClose() {}
+    setPosition() {}
   },
   HandlebarsApplicationMixin: base => base
 }}};
@@ -156,6 +161,28 @@ test("the editor entry points require a ready GM world", async () => {
   const [[namespace, key, menu]] = menus;
   assert.deepEqual([namespace, key, menu.restricted], [MODULE_ID, "portraitEditor", true]);
   assert.ok((await api.openEditor()) instanceof menu.type);
+});
+
+test("loading an image refits the editor only if its content extends below the viewport", async t => {
+  startWorld(true);
+  mockImage(t);
+  const editor = await api.openEditor();
+  const body = editor.parts.body;
+  const workspace = body.querySelector(".mask-workspace");
+  const status = body.querySelector(".mask-status");
+  let loadedBottom = 980;
+  t.mock.method(editor.element, "getBoundingClientRect", () => ({bottom: workspace.hidden ? 550 : loadedBottom}));
+  const fit = t.mock.method(editor, "setPosition", () => {
+    assert.equal(status.textContent, "DTM.Ready");
+    loadedBottom = 950;
+  });
+
+  body.querySelector("file-picker").value = sourcePath;
+  await editor.loadImage();
+  assert.equal(fit.mock.callCount(), 1);
+  await editor.loadImage();
+  assert.equal(fit.mock.callCount(), 1);
+  await editor.close();
 });
 
 test("loads the exact path, previews the saved crop, bounds edits, and preserves the mask on cancel", async t => {
