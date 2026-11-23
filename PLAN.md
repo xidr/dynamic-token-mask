@@ -3,3 +3,5 @@ Approved CLI workflow, branch task/kb-conventions, base d4abbbb. Standard builde
 1. Adopt system conventions for relative Markdown links, knowledge/INDEX.md, six templates and decision records. Preserve destination, aliases, anchors, literals and history. Record the new decision, mark the previous setup decision replaced in part for the affected scope, and update its index entry.
 2. Update all affected active references, authoring guidance, reviewer checks and the Codex handoff wording. Keep shared instructions mirrored. Preserve module-specific knowledge and workflows.
 3. Validate links against the baseline, index and template coverage, metadata and current commands. Planner commits the tested changes; fresh read-only Astra reviewer. Return for review before merge.
+
+4. Approved checker fixes after integration with main d10c582: require exactly one primary template entry per expected template under Templates, verify INDEX.md by its stored directory-entry spelling on case-insensitive filesystems, and validate links with inline-code labels while ignoring example links inside code. Run regression probes and a fresh CLI review.
