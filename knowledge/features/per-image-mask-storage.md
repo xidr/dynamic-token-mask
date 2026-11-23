@@ -1,0 +1,30 @@
+---
+title: Per-image mask storage
+created: 2026-11-23
+updated: 2026-11-23
+tags: [feature, storage]
+status: active
+---
+# Per-image mask storage
+
+**TL;DR:** Each exact image path can have a world-scoped circle shared by tokens using that image.
+
+## Request
+
+Associate a circle with an individual image, including a resolved wildcard image.
+
+## Decided
+
+Store validated records in a hidden world setting. Preserve the original image and path.
+
+## Behavior
+
+A ready GM can save and remove circles. Clients can read records and subscribe to changes. See [[mask-storage]] for the API and concurrency limits.
+
+## Out of scope
+
+Editor, rendering and cross-world export.
+
+## Implementation
+
+scripts/mask-store.mjs, scripts/main.js and tests/mask-store.test.mjs. Automated storage checks pass. Foundry runtime behavior awaits a designated test world.

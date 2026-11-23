@@ -3,11 +3,18 @@ title: Decision title
 date: YYYY-MM-DD
 status: accepted
 tags: []
+replaced_by:
+replaced_part:
 ---
 
 # Decision title
 
-**Decision:** What was decided.
-**Why:** Main reasons.
-**Alternatives considered:** Other options and why they were rejected.
-**Consequences:** What this changes or requires.
+**TL;DR:** Summarize the decision.
+
+## Context
+
+## Decision
+
+## Alternatives
+
+## Consequences

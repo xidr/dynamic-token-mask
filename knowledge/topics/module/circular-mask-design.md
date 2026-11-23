@@ -1,7 +1,7 @@
 ---
 title: Circular mask design
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-11-23
 tags: [module, design, rendering]
 status: proposed
 source: User requirements and installed Foundry VTT 14.367 client/common source inspection, 2026-10-22
@@ -9,7 +9,9 @@ source: User requirements and installed Foundry VTT 14.367 client/common source 
 
 # Circular mask design
 
-**TL;DR:** Preserve original image files and token image paths. Proposed implementation stores image-specific circle definitions in a world setting and supplies temporary circular cropped textures to token meshes. Requirements are confirmed; storage scope, crop framing and implementation below are proposals, not implemented behavior.
+Last verified: 2026-10-22 (Foundry source observations)
+
+**TL;DR:** Preserve original image files and token image paths. Proposed implementation stores image-specific circle definitions in a world setting and supplies temporary circular cropped textures to token meshes. The original design below predates the implemented [[mask-storage]] contract. Framing and rendering remain proposals.
 
 ## Confirmed requirements
 
@@ -41,7 +43,7 @@ Use a hidden module world setting with a versioned array of records, each contai
 
 Proposed framing: crop the square bounding the selected circle, make pixels outside the circle transparent, and fit that square to the token. Thus choosing a smaller circle zooms in on the selected subject; it does not shrink the displayed token. Default fit preserves aspect ratio. Existing nonuniform scale or fill on rectangular footprints can distort a circle; show this distinction in preview rather than silently rewriting token settings.
 
-Per-image association was subsequently confirmed by the user, including separate masks for images selected by wildcard tokens. World-level storage and crop framing remain proposed. Future per-token overrides or cross-world export are separate features.
+Per-image association was subsequently confirmed by the user, including separate masks for images selected by wildcard tokens. World-level storage has since shipped as described in [[mask-storage]]. Crop framing remains proposed. Future per-token overrides or cross-world export are separate features.
 
 ## Proposed editor
 
@@ -65,5 +67,5 @@ No runtime verification, module activation, server restart or implementation occ
 
 ## Related
 
-- [[_overview]]
+- [[topics/module/_overview]]
 - [[develop-and-validate]]

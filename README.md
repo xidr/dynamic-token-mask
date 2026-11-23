@@ -21,11 +21,11 @@ Open this folder as its own IDE project and Git repository.
 - `styles/module.css`: module UI styles.
 - `lang/en.json`, `lang/ru.json`: translations.
 
-No build step is required. This directory is the live module installation at `/opt/foundry/foundrydata/Data/modules/dynamic-token-mask`.
+No build step is required. The main checkout under `/opt/foundry-dev/foundrydata/Data/modules/dynamic-token-mask` is the live module directory. Linked worktrees are isolated from it.
 Once Foundry discovers the module, enable it through Manage Modules in a test world and reload the browser after script changes. If it is absent from the module list, a Foundry restart may be needed.
 
 Files in this directory can be served publicly by Foundry. Keep secrets and private material outside it.
 
 ## Agent knowledge base
 
-Start with [AGENTS.md](AGENTS.md) and [knowledge/index.md](knowledge/index.md). Shared notes cover project scope, environment, validation and open design questions. Claude Code uses the same instructions through `CLAUDE.md`.
+Start with [AGENTS.md](AGENTS.md) and [knowledge/index.md](knowledge/index.md). Shared notes cover project scope, environment, validation and open design questions. Use [CODEX.md](CODEX.md) for Codex and [GEMINI.md](GEMINI.md) for Gemini Swarm.

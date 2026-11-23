@@ -1,13 +1,15 @@
 ---
 title: Module overview
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-11-23
 tags: [module, scope]
 status: active
 source: Project setup conversation and existing server knowledge, 2026-10-22
 ---
 
 # Module overview
+
+Last verified: 2026-11-23
 
 **TL;DR:** Dynamic Token Mask will preserve source images and allow editing a circular mask's center and size for scene-token rendering. The storage service is implemented; editor and rendering remain proposed in [[circular-mask-design]], with no runtime verification.
 
@@ -23,7 +25,7 @@ source: Project setup conversation and existing server knowledge, 2026-10-22
 
 Clarify these with the user before treating them as requirements:
 
-- Per-image association is confirmed, including individual images selected by wildcard tokens; world-level storage is the current proposal.
+- Per-image association is confirmed, including individual images selected by wildcard tokens; world-level storage is implemented.
 - Confirm whether the selected circle should fill the token or retain the original image framing.
 - How should masking interact with Foundry's existing token rendering, borders, scaling and rotation?
 - Which other token modules must be compatible? What should happen when the module is disabled?

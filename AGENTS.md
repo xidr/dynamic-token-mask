@@ -1,27 +1,36 @@
 # Shared agent instructions
 
-This is the standalone Dynamic Token Mask module. `AGENTS.md` is the shared entry point for Codex and Claude Code; `CLAUDE.md` imports it. Keep lasting project knowledge in `knowledge/`, an Obsidian-compatible Markdown vault.
+Codex reads CODEX.md. Antigravity reads GEMINI.md. Delegated roles follow their assignment.
 
-## Start here
+## What this is
 
-1. Read `knowledge/index.md`, then only the overview or notes relevant to the task. Read `README.md` for the current implementation status.
-2. Search with `rg` before deciding something is undocumented. Prefer newer `updated` dates; ignore `status: outdated` except as history. Report contradictions.
-3. Notes describe dated observations. Verify paths, branches, APIs and settings before relying on them. In a worktree use its own instructions and knowledge base.
+Dynamic Token Mask is a standalone Foundry VTT 14 module. A JavaScript service stores one circular mask per image in a world setting. Read README.md for implementation status.
 
-## Project boundaries
+## Commands
 
-- Module ID: `dynamic-token-mask`. Standalone and system-independent; target Foundry VTT 14. Runtime compatibility and rendering design remain unverified.
-- This checkout is the live module directory. Foundry may publicly serve its files, including knowledge notes. Never store secrets, personal IDs, private material or rule-book text here. Rule books belong outside `Data/`.
-- Preserve user changes. Keep English and Russian localization keys in sync. Scope module UI CSS under `.dynamic-token-mask`.
-- Validate relevant JSON, manifest paths and JavaScript syntax after changes. Test rendering behavior in a designated test world when implementation begins; syntax checks do not prove runtime compatibility.
-- Ask before restarting Foundry, enabling the module in a campaign world, or pushing to a remote, unless the user already authorized that action. Do not alter unrelated systems, modules or worlds.
-- Consider IDE tools for symbols, callers and inspections; use focused `rg` for literal text. Confirm the IDE targets this module project before using its results. See `knowledge/reference/ide-tools.md`.
+- Worktree setup and build: none. Foundry loads browser JavaScript directly. Tests use Node's built-in runner.
+- Run: Foundry reads the live module checkout. After an approved merge, reload an authorized test world to exercise changes.
+- Test (full): `node --test`. Test (targeted): `node --test tests/mask-store.test.mjs`.
+- Lint: none configured. Run `node --check` on each changed JavaScript file.
+- Manifest paths, JSON and translation keys: run the checks in `knowledge/how-to/develop-and-validate.md` after manifest or UI changes.
 
-## Maintaining knowledge
+## Hard rules
 
-- One idea per file, lowercase-kebab-case names. Use `knowledge/templates/note.md` or `decision.md`, fill in frontmatter, and start notes with a short TL;DR.
-- Record conclusions and evidence, not transcripts. Distinguish implemented facts, proposals and open questions.
-- Update existing notes rather than duplicating them; change `updated`. Never delete knowledge: mark it outdated and link its replacement.
-- Use `[[note-name]]` links. Register every new note in the index or a topic overview. Put unsorted notes in `knowledge/inbox/`.
-- Ask before large restructures. Keep knowledge in version control alongside the module; agent-specific memory is not the shared source of truth.
-- At session end, record useful discoveries or decisions and tell the user which files changed. Keep `README.md` aligned with implemented behavior.
+- Use English for chat unless asked otherwise. Write project notes, comments and commits in English.
+- After plan approval, work in a linked task worktree on `task/<slug>`. Reuse the assigned Codex checkout wherever it resides. Preserve unrelated changes. The user approves merges and handles pushes.
+- Run the full suite before committing changes beyond Markdown. Start bug fixes with a failing test or document why the runner cannot reproduce the issue. Preserve existing test coverage.
+- Foundry can serve the entire module directory. Keep secrets, private material, personal identifiers and rule-book content outside it. Keep rule books outside Data/.
+- Keep the module system-independent, English and Russian translation keys aligned, and module UI CSS scoped under `.dynamic-token-mask`.
+- Verify rendering in a designated test world before claiming compatibility. Obtain permission before restarting Foundry or enabling the module in a campaign. Leave unrelated systems, modules and worlds alone.
+- For new soft game-rule boundaries, warn inline before confirmation and keep a visible marker on the result. Enforce technical, security, permission, idempotency and schema guards strictly.
+- Confirm IDE project targeting before using symbol inspections. See `knowledge/reference/ide-tools.md`.
+
+## Knowledge base
+
+Start at `knowledge/index.md` in the current checkout. Read the relevant topic overview and notes. Search with rg, favor recent evidence, and flag contradictions. Keep lasting knowledge in this vault.
+Use topics for area overviews, reference for contracts, how-to for procedures, decisions for dated choices, features for delivered behavior, bugs for open reports and bugs/fixed for resolved reports. File surprises in gotchas.md.
+Follow `knowledge/how-to/write-notes.md` and use the templates. Verify topic claims against code and date the evidence. Ask before large restructures. At finish, update the README and notes as applicable, then list changed files.
+
+## Shared with other tools
+
+AGENTS.md routes Codex to CODEX.md and Gemini to GEMINI.md. Mirror What this is, Commands, Hard rules and Knowledge base byte-for-byte in AGENTS.md and GEMINI.md. Both workflows use What to check in .agents/agents/reviewer.md.

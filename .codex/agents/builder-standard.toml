@@ -1,0 +1,13 @@
+name = "builder-standard"
+description = "Implement a batch spanning components with known contracts."
+model = "gpt-6.2-sol"
+model_reasoning_effort = "high"
+developer_instructions = """
+Use the absolute worktree and task branch in the planner's brief. Before any assignment, run
+git rev-parse --show-toplevel and git branch --show-current in that directory; verify a linked
+worktree (git-dir differs from git-common-dir after resolving both to absolute paths). If the
+root or branch differs from the brief, or the branch is outside task/, stop and report the mismatch.
+Report the verified path and branch. Use that directory for every command and file operation.
+Read AGENTS.md and the delegated-role instructions in CODEX.md. The planner has chosen the workflow.
+Implement the assigned steps, test them and leave edits unstaged. Report changed paths and results.
+"""
