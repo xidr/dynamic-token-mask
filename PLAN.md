@@ -11,3 +11,5 @@ Approved CLI workflow, branch task/kb-conventions, base d4abbbb. Standard builde
 6. Approved final-review fix: recognize literal Markdown links with empty or balanced nested labels in inline code. Mask only the example and continue detecting adjacent stale command paths. Preserve existing checker behavior elsewhere. Test and send the committed diff to a fresh CLI reviewer before merge.
 
 7. Approved follow-up: when an inner link invalidates an outer link, mask only actual link examples and keep the stale command visible. Consume balanced parentheses in literal link destinations. Preserve earlier controls and run fresh independent CLI review before merge.
+
+8. Approved checker correction: parse literal link destinations from original span text at the matched label boundary. Preserve masking for labels. Verify both reported inline-code cases on baseline and corrected checker, then run fresh CLI review before merging.
