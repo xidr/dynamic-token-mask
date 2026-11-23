@@ -9,7 +9,7 @@ source: scripts/mask-store.mjs, scripts/main.js and focused Node tests
 
 # Mask storage
 
-**TL;DR:** A hidden world setting stores one validated circle per exact image path. The service is implemented and unit-tested; Foundry runtime and multiplayer behavior remain unverified.
+**TL;DR:** A hidden world setting stores one validated circle per exact image path. In the Foundry 14.369 test, a GM save and removal reached a connected player, and the saved mask persisted across reconnects and browser reloads.
 
 ## Schema and API
 
@@ -35,7 +35,7 @@ The static token renderer consumes this API and its change hook. GMs can manage 
 
 ## Validation
 
-`node --test tests/mask-store.test.mjs` covers rectangular bounds, invalid inputs, exact image associations, detached reads, reopening persistence, queued saves, remote notifications, no-op operations, permissions, failed-write recovery and invalid schema rejection using an injected settings adapter. These tests do not prove Foundry runtime compatibility. Next validate world persistence and synchronized callbacks in an agreed test world.
+`node --test tests/mask-store.test.mjs` covers rectangular bounds, invalid inputs, exact image associations, detached reads, reopening persistence, queued saves, remote notifications, no-op operations, permissions, failed-write recovery and invalid schema rejection using an injected settings adapter. In the 2026-11-23 Foundry 14.369 test, a single GM save updated both clients, the stored mask applied after reconnecting and reloading, and a subsequent GM removal propagated live. See [[features/static-token-renderer]].
 
 ## Related
 

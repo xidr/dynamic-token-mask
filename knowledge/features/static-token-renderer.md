@@ -29,4 +29,10 @@ The editor, file-browser controls, dynamic rings, previews, animated images and 
 
 ## Implementation
 
-`scripts/main.js` connects Foundry hooks to `scripts/mask-renderer.mjs`. The Node tests cover crop geometry, sharing, redraw, reload, release, stale work and fallback. All 19 tests passed and the implementation review accepted the batch with no findings. Foundry 14.369 observation is pending. See [[verify-static-token-masks]].
+`scripts/main.js` connects Foundry hooks to `scripts/mask-renderer.mjs`. The Node tests cover crop geometry, sharing, redraw, reload, release, stale work and fallback. All 19 tests passed and the implementation review accepted the batch with no findings.
+
+## Runtime verification
+
+On 2026-11-23, separate headless GM and player sessions in Foundry 14.369 displayed two visible, targetable 1×1 static tokens with rings disabled and a shared 400×200 PNG. After the GM saved the mask, both tokens on both clients showed a 120×120 crop with the off-center green subject centered and a transparent corner. The same crop checks passed in fresh browser sessions after reconnecting and again after explicitly reloading both clients.
+
+The GM's removal call returned `true`. Both tokens on both connected clients restored the original 400×200 texture, opaque corner and baseline center pixels without a reload. The tokens retained their original image path and grid footprint and remained visible and targetable through save and removal. The temporary test scene was deleted. See [[verify-static-token-masks]].

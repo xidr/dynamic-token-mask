@@ -27,4 +27,4 @@ Editor, rendering and cross-world export.
 
 ## Implementation
 
-scripts/mask-store.mjs, scripts/main.js and tests/mask-store.test.mjs. Automated storage checks pass. Foundry runtime behavior awaits a designated test world.
+`scripts/mask-store.mjs`, `scripts/main.js` and `tests/mask-store.test.mjs`. Automated storage checks pass. In the 2026-11-23 Foundry 14.369 test, a GM save and removal reached a connected player, and the saved mask persisted across reconnects and browser reloads. See [[features/static-token-renderer]].

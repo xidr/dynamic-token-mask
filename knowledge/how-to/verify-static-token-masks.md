@@ -9,7 +9,7 @@ source: Static token renderer milestone and scripts/main.js
 
 # Verify static token masks in Foundry
 
-**TL;DR** Exercise save, player synchronization, reload and removal on two tokens with one shared portrait in a designated Foundry 14.369 test world. These runtime checks are pending.
+**TL;DR** Exercise save, player synchronization, reload and removal on two tokens with one shared portrait in a designated Foundry 14.369 test world.
 
 ## When to use
 
@@ -35,7 +35,7 @@ After the approved merge, use the designated test world with the module enabled 
    });
    ```
 
-3. Confirm both clients see the same off-center circular portrait on both tokens. Confirm the grid footprint, targeting and token image paths match the baseline.
+3. Confirm both clients see the same circular portrait centered on the selected subject on both tokens. Confirm the grid footprint, targeting and token image paths match the baseline.
 4. Reload both sessions and confirm both portraits remain cropped. Select a test token again and run the following in the GM client.
 
    ```js
@@ -48,7 +48,7 @@ After the approved merge, use the designated test world with the module enabled 
 
 ## Check it worked
 
-Record the Foundry version and observations for crop placement, live player updates, reload, removal, targeting and grid footprint. Update the feature record with verified results.
+Record the Foundry version and observations for crop placement, live player updates, reload, removal, targeting and grid footprint. These checks passed on 2026-11-23 in Foundry 14.369. See [[features/static-token-renderer]] for the observations and update it with later results.
 
 ## If it goes wrong
 

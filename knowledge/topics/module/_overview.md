@@ -9,9 +9,9 @@ source: Project setup conversation, 2026-10-22, and scripts/main.js and scripts/
 
 # Module overview
 
-Last verified: 2026-11-23 (code and Node tests)
+Last verified: 2026-11-23 (code, Node tests and Foundry 14.369 GM and player sessions)
 
-**TL;DR:** Dynamic Token Mask stores a circle per image path and renders circular crops on ordinary static scene tokens. GMs manage masks through the API. The editor remains proposed in [[circular-mask-design]] and Foundry runtime verification is pending.
+**TL;DR:** Dynamic Token Mask stores a circle per image path and renders circular crops on ordinary static scene tokens. GMs manage masks through the API. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. The editor remains proposed in [[circular-mask-design]].
 
 ## Details
 
