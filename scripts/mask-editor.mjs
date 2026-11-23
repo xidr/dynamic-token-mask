@@ -9,7 +9,10 @@ const NUMBER_FIELDS = ["centerX", "centerY", "radius", "radiusSlider"];
 
 export async function openMaskEditor(src = "", {opener} = {}) {
   const editor = new MaskEditor({src, opener});
-  await editor.render({force: true});
+  const options = {force: true};
+  const windowId = opener?.ownerDocument?.defaultView?.id;
+  if (windowId) options.window = {windowId};
+  await editor.render(options);
   return editor.rendered ? editor : null;
 }
 

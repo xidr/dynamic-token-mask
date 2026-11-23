@@ -72,8 +72,9 @@ class Element {
   }
 }
 
-function makeDocument() {
+function makeDocument(defaultView = {}) {
   return {
+    defaultView,
     baseURI: "https://foundry.example/table/game",
     createElement(tag, options) { return new Element(tag, this, options); }
   };
@@ -154,12 +155,13 @@ globalThis.Hooks = {
 globalThis.document = makeDocument();
 globalThis.foundry = {applications: {api: {
   ApplicationV2: class {
-    async render() {
+    async render(options) {
       this._canRender();
-      const {src: path} = await this._prepareContext({});
-      document.activeElement = document.createElement("button");
+      const {src: path} = await this._prepareContext(options);
+      const hostDocument = detachedWindows.get(options.window?.windowId) ?? document;
+      hostDocument.activeElement = hostDocument.createElement("button");
       this.rendered = true;
-      editors.push({editor: this, path});
+      editors.push({editor: this, path, options});
     }
     async close() {
       this.rendered = false;
@@ -172,12 +174,14 @@ globalThis.foundry = {applications: {api: {
 }}};
 await import("../scripts/main.js");
 
+const detachedWindows = new Map();
 let editors;
 let masks;
 let reads;
 
 beforeEach(() => {
   editors = [];
+  detachedWindows.clear();
   reads = 0;
   let stored = {version: 1, masks: [portrait]};
   let onChange;
@@ -261,8 +265,9 @@ test("edit activation opens the exact image and restores focus without native se
     assert.equal(picker.selected, "preserve.webp");
     assert.deepEqual(picker.submitted, []);
     await setImmediate();
-    const {editor, path} = editors.at(-1);
+    const {editor, path, options} = editors.at(-1);
     assert.equal(path, src);
+    assert.deepEqual(options, {force: true});
     picker.element.ownerDocument.activeElement = picker.element;
     await editor.close();
     assert.equal(picker.element.ownerDocument.activeElement, control);
@@ -270,6 +275,30 @@ test("edit activation opens the exact image and restores focus without native se
   assert.equal(editors.length, 2);
   picker.element.fire("submit");
   assert.deepEqual(picker.submitted, ["preserve.webp"]);
+});
+
+test("renders the editor in the detached picker's host and returns focus there", async () => {
+  const windowId = "detached-picker";
+  const ownerDocument = makeDocument({id: windowId});
+  detachedWindows.set(windowId, ownerDocument);
+  const picker = makePicker("images", {ownerDocument});
+  const [row] = picker.show([[src, "Portrait"]]);
+  const control = button(row);
+
+  control.fire("click", {detail: 0});
+  await setImmediate();
+  const {editor, options} = editors.at(-1);
+  assert.deepEqual(options, {force: true, window: {windowId}});
+  assert.notEqual(ownerDocument.activeElement, control);
+  await editor.close();
+  assert.equal(ownerDocument.activeElement, control);
+});
+
+test("opens the editor in the default workspace when called without an opener", async () => {
+  const editor = await game.modules.get(MODULE_ID).api.openEditor();
+  assert.equal(editors.at(-1).editor, editor);
+  assert.deepEqual(editors.at(-1).options, {force: true});
+  await editor.close();
 });
 
 test("keeps native image drag and cancels drags that start on the edit button", () => {
