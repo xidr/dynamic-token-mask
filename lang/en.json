@@ -1,1 +1,34 @@
-{}
+{
+  "DTM": {
+    "Title": "Portrait Mask Editor",
+    "OpenEditor": "Open Editor",
+    "MenuHint": "Frame a circular crop for a shared token portrait.",
+    "Image": "Image path",
+    "Load": "Load Image",
+    "Editing": "Loaded image:",
+    "Help": "Drag the center dot to move the circle. Drag the right dot to resize it.",
+    "Source": "Source image with circle and drag handles",
+    "Preview": "Square token preview",
+    "CenterX": "Center X (%)",
+    "CenterY": "Center Y (%)",
+    "Radius": "Radius (%)",
+    "Shared": "Saving or removing a mask changes every eligible token using this exact image path in this world.",
+    "Reset": "Reset Circle",
+    "Remove": "Remove Mask",
+    "Save": "Save Mask",
+    "Cancel": "Cancel",
+    "Permission": "The editor is available to GMs once the world is ready.",
+    "InvalidSource": "Enter a specific image path or select an image with the file picker. Wildcard paths are unsupported.",
+    "Loading": "Loading image…",
+    "Unsupported": "Select a static PNG, JPEG, or WebP image.",
+    "LoadFailed": "Could not open the image. Verify the path and that this world can read the image, then try again.",
+    "ReadFailed": "Could not read saved masks. Reload the world page before trying again.",
+    "Ready": "Image loaded.",
+    "DimensionsChanged": "The image dimensions have changed. Review the circle and save it again to update the token crop.",
+    "Conflict": "The saved mask changed. Load this image again before saving or removing it.",
+    "Saved": "Mask saved.",
+    "Removed": "Mask removed.",
+    "SaveFailed": "Could not save the mask. Check your connection and GM access, then try again.",
+    "RemoveFailed": "Could not remove the mask. Check your connection and GM access, then try again."
+  }
+}

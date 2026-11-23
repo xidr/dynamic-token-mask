@@ -1,3 +1,4 @@
+import {MaskEditor, openMaskEditor} from "./mask-editor.mjs";
 import {CHANGE_HOOK, MaskStore, MODULE_ID} from "./mask-store.mjs";
 import {MaskRenderer} from "./mask-renderer.mjs";
 
@@ -15,7 +16,20 @@ Hooks.once("init", () => {
     notify: paths => Hooks.callAll(CHANGE_HOOK, paths)
   });
   masks.register();
-  game.modules.get(MODULE_ID).api = Object.freeze({masks});
+  game.modules.get(MODULE_ID).api = Object.freeze({masks, openEditor: openMaskEditor});
+});
+
+Hooks.once("setup", () => {
+  if (game.user?.isGM === true) {
+    game.settings.registerMenu(MODULE_ID, "portraitEditor", {
+      name: "DTM.Title",
+      label: "DTM.OpenEditor",
+      hint: "DTM.MenuHint",
+      icon: "fa-solid fa-circle-user",
+      type: MaskEditor,
+      restricted: true
+    });
+  }
 });
 
 Hooks.once("ready", () => {

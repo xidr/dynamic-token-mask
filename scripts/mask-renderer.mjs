@@ -1,8 +1,8 @@
 /** Draw only the selected source pixels into a transparent, square texture. */
-export function drawCrop(canvas, image, mask) {
+export function drawCrop(canvas, image, mask, maxSize = Infinity) {
   const {imageWidth, imageHeight, centerX, centerY, radius} = mask;
   const diameter = 2 * radius * Math.min(imageWidth, imageHeight);
-  const size = Math.max(1, Math.ceil(diameter));
+  const size = Math.max(1, Math.min(maxSize, Math.ceil(diameter)));
   canvas.width = canvas.height = size;
   const context = canvas.getContext("2d");
   context.beginPath();
