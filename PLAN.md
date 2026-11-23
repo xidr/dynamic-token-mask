@@ -9,3 +9,5 @@ Approved CLI workflow, branch task/kb-conventions, base d4abbbb. Standard builde
 5. Approved follow-up: detect stale path substrings inside inline commands, including relative paths, while exempting literal Markdown link examples. Use shared ATX heading parsing for Templates section boundaries, including correctly indented headings. Verify both regressions and existing controls in scratch copies, then obtain fresh CLI review before merge.
 
 6. Approved final-review fix: recognize literal Markdown links with empty or balanced nested labels in inline code. Mask only the example and continue detecting adjacent stale command paths. Preserve existing checker behavior elsewhere. Test and send the committed diff to a fresh CLI reviewer before merge.
+
+7. Approved follow-up: when an inner link invalidates an outer link, mask only actual link examples and keep the stale command visible. Consume balanced parentheses in literal link destinations. Preserve earlier controls and run fresh independent CLI review before merge.
