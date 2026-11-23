@@ -15,3 +15,4 @@ See [[topics/model-calibration/_overview]] for the schema.
 
 | Date | Task | Kind | Planner | Builder | Reviewer & verdict | Fix rounds | Findings | Cost / notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-11-23 | kb-setup | infra | Codex | Planner built setup, Sol Medium applied fix | Astra Medium, Accept after fixes → Accept | 1 | Gemini skipped reviewer creation for requested Markdown reviews | CLI and native worker smoke checks passed |
