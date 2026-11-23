@@ -58,8 +58,10 @@ sections = ('Context', 'Decision', 'Alternatives', 'Consequences')
 shared_sections = ('What this is', 'Commands', 'Hard rules', 'Knowledge base')
 stale_paths = ('knowledge/index.md', 'templates/bug-report.md')
 inline_code = re.compile(r'(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)')
-link = re.compile(r'\[([^\]\n]+)\]\(\s*(<[^>\n]+>|[^\s)]*)'
-                  r'(?:\s+["\'][^\n]*?["\'])?\s*\)')
+link_destination = re.compile(r'\(\s*(<[^>\n]+>|[^\s)]*)'
+                              r'(?:\s+["\'][^\n]*?["\'])?\s*\)')
+link = re.compile(r'\[([^\]\n]+)\]' + link_destination.pattern)
+label_token = re.compile(r'\\[\\\[\]]|[\[\]]')
 errors = []
 entries = {}
 
@@ -91,10 +93,30 @@ def code_text(span):
 
 def code_without_links(span):
     text = code_text(span)
-    for example in reversed(list(link.finditer(mask_code(text)))):
-        start, end = example.span()
-        text = text[:start] + ' ' + text[end:]
-    return text
+    visible = mask_code(text)
+    openings = []
+    examples = []
+    end = 0
+    for token in label_token.finditer(visible):
+        if token.start() < end:
+            continue
+        if token[0] == '[':
+            openings.append((token.start(), len(examples)))
+        elif token[0] == ']' and openings:
+            start, first_inner = openings.pop()
+            if destination := link_destination.match(visible, token.end()):
+                end = destination.end()
+                # The outer example already covers any examples inside its label.
+                del examples[first_inner:]
+                examples.append((start, end))
+
+    remaining = []
+    cursor = 0
+    for start, end in examples:
+        remaining.append(text[cursor:start])
+        cursor = end
+    remaining.append(text[cursor:])
+    return ' '.join(remaining)
 
 
 def atx_heading(line):
