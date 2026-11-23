@@ -3,8 +3,6 @@ title: Use derived mesh textures for static token crops
 date: 2026-11-23
 status: accepted
 tags: [rendering, architecture]
-replaced_by:
-replaced_part:
 ---
 
 # Use derived mesh textures for static token crops
@@ -25,4 +23,4 @@ Keeping the original frame would leave a smaller portrait inside the original bo
 
 ## Consequences
 
-The renderer can reuse the existing mask-change hook and keeps crop ownership limited to active consumers. The crop needs a browser-readable resource with the dimensions recorded in the mask. Renderer interaction with Foundry targeting and multiplayer redraw remains part of [[verify-static-token-masks]].
+The renderer can reuse the existing mask-change hook and keeps crop ownership limited to active consumers. The crop needs a browser-readable resource with the dimensions recorded in the mask. Renderer interaction with Foundry targeting and multiplayer redraw remains part of [Verify static token masks in Foundry](../how-to/verify-static-token-masks.md).

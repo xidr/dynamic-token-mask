@@ -50,7 +50,5 @@ The storage service and portrait editor are implemented. The planned adapter can
 
 ## Related
 
-- [[circular-mask-design]]
-- [[mask-storage]]
-- [[portrait-mask-editor]]
-- [[develop-and-validate]]
+- [the circular mask design](../topics/module/circular-mask-design.md)
+- [Develop and validate](../how-to/develop-and-validate.md)

@@ -1,8 +1,10 @@
 ---
 title: Knowledge base and workflow setup
 date: 2026-11-23
-status: accepted
+status: replaced in part
 tags: [workflow]
+replaced_by: "2026-11-23-v13-knowledge-conventions.md"
+replaced_part: "Wikilinks and the prior conventions for the index, templates and decision records."
 ---
 # Knowledge base and workflow setup
 

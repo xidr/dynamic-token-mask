@@ -34,10 +34,14 @@ create, or delete a file, never commit, stash, or switch branches.
   test that reproduces the bug; no test was deleted or weakened.
 - **Hard rules:** every rule under "Hard rules" in the entry file (AGENTS.md and GEMINI.md) was kept.
 - **Knowledge base:** `knowledge/` says what the code now does; gotchas in
-  `knowledge/gotchas.md` that apply to the change were respected.
+  `knowledge/gotchas.md` that apply to the change were respected. For note changes, run the
+  [write-notes checks](../../knowledge/how-to/write-notes.md#check-it-worked). Verify relative
+  Markdown links, index and template coverage, and preserved link labels and fragments. Decision
+  records preserve the original reasoning and identify the successor and any partial scope.
 - **Served files:** no secrets in tracked files; keep private identifiers, campaign material and licensed text outside the served checkout.
 - **Notes by type:** a feature has its record, a fixed bug its report moved to
-  `knowledge/bugs/fixed/`, and every new note an `index.md` entry.
+  `knowledge/bugs/fixed/`. Register every active note in `knowledge/INDEX.md` or its area
+  `_overview.md`, alphabetically within its section, with a reading hint.
 - **Warn, don't block:** new features warn inline before confirming and attach a persistent visible warning marker on soft domain/rule boundaries instead of hard-blocking, while keeping technical, security, permission, idempotency, and schema guards strict.
 - Check manifest asset paths, translation key parity, CSS scope and JS syntax. Require designated-world evidence for rendering claims.
 

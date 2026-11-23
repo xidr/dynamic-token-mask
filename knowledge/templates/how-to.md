@@ -17,4 +17,6 @@ source: Chat, source path, URL, or verified observation
 
 ## Check it worked
 
+Record how to confirm the outcome. Mark an untested procedure `TODO: unverified`.
+
 ## If it goes wrong

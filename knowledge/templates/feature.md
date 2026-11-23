@@ -20,3 +20,5 @@ source: Chat, source path, URL, or verified observation
 ## Out of scope
 
 ## Implementation
+
+List the changed files, automated checks and any verification in a designated Foundry world.

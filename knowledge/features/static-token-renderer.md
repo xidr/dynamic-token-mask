@@ -17,7 +17,7 @@ Apply a saved off-center circle to every ordinary scene token using the same res
 
 ## Decided
 
-Crop the square around the selected circle and clip its corners to transparency. Let Foundry fit the resulting square using the token's existing texture settings. See [[2026-11-23-static-token-mesh-crops]].
+Crop the square around the selected circle and clip its corners to transparency. Let Foundry fit the resulting square using the token's existing texture settings. See [Use derived mesh textures for static token crops](../decisions/2026-11-23-static-token-mesh-crops.md).
 
 ## Behavior
 
@@ -35,4 +35,4 @@ This milestone covered ordinary static scene tokens. See [[portrait-mask-editor]
 
 On 2026-11-23, separate headless GM and player sessions in Foundry 14.369 displayed two visible, targetable 1×1 static tokens with rings disabled and a shared 400×200 PNG. After the GM saved the mask, both tokens on both clients showed a 120×120 crop with the off-center green subject centered and a transparent corner. The same crop checks passed in fresh browser sessions after reconnecting and again after explicitly reloading both clients.
 
-The GM's removal call returned `true`. Both tokens on both connected clients restored the original 400×200 texture, opaque corner and baseline center pixels without a reload. The tokens retained their original image path and grid footprint and remained visible and targetable through save and removal. The temporary test scene was deleted. See [[verify-static-token-masks]].
+The GM's removal call returned `true`. Both tokens on both connected clients restored the original 400×200 texture, opaque corner and baseline center pixels without a reload. The tokens retained their original image path and grid footprint and remained visible and targetable through save and removal. The temporary test scene was deleted. See [Verify static token masks in Foundry](../how-to/verify-static-token-masks.md).

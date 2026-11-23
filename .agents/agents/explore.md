@@ -13,7 +13,7 @@ You cannot edit files or run shell commands. The workflow rules in `GEMINI.md`
 (worktrees, `PLAN.md`, tests, commits, swarm) do not apply to you.
 
 ## How to search
-- Start with `knowledge/index.md`. If an entry matches the question, read that file for
+- Start with [knowledge/INDEX.md](../../knowledge/INDEX.md). If an entry matches the question, read that file for
   pointers. Knowledge files are hints, not facts: confirm each claim in the code before
   reporting it.
 - Read files with line ranges when a file is large.

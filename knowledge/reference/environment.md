@@ -30,5 +30,5 @@ Foundry serves files from its data directories, including Markdown notes. Do not
 
 ## Related
 
-- [[develop-and-validate]]
-- [[ide-tools]]
+- [Develop and validate](../how-to/develop-and-validate.md)
+- [IDE tools](ide-tools.md)

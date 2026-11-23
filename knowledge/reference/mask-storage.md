@@ -33,14 +33,14 @@ Foundry setting changes emit `Hooks.callAll("dynamic-token-mask.masksChanged", p
 
 The service reads fresh settings and compares any expected snapshot once the operation reaches the front of its instance queue. A mismatch rejects with `MaskConflictError`, including after another local editor has written a different mask. The queue continues after a rejection. Concurrent GM browsers or tabs can still overwrite simultaneous whole-setting changes because their queues are separate. Reads return detached copies.
 
-The static token renderer consumes this API and its change hook. The [[portrait-mask-editor]] uses conditional writes for Save and Remove. The [[verify-static-token-masks]] procedure covers persistence and receiving-client behavior in Foundry.
+The static token renderer consumes this API and its change hook. GMs can manage masks through the API while the file-browser UI is planned. The [Verify static token masks in Foundry](../how-to/verify-static-token-masks.md) procedure covers persistence and receiving-client behavior in Foundry.
 
 ## Validation
 
-`node --test tests/mask-store.test.mjs` covers rectangular bounds, invalid inputs, exact image associations, detached reads, reopening persistence, queued saves and conditional writes, remote notifications, no-op operations, permissions, failed-write recovery and invalid schema rejection using an injected settings adapter. In the 2026-11-23 Foundry 14.369 test, a single GM save updated both clients, the stored mask applied after reconnecting and reloading, and a subsequent GM removal propagated live. See [[features/static-token-renderer]].
+`node --test tests/mask-store.test.mjs` covers rectangular bounds, invalid inputs, exact image associations, detached reads, reopening persistence, queued saves, remote notifications, no-op operations, permissions, failed-write recovery and invalid schema rejection using an injected settings adapter. In the 2026-11-23 Foundry 14.369 test, a single GM save updated both clients, the stored mask applied after reconnecting and reloading, and a subsequent GM removal propagated live. See [Static token renderer](../features/static-token-renderer.md).
 
 ## Related
 
-- [[file-picker-integration]]
-- [[circular-mask-design]]
-- [[develop-and-validate]]
+- [File picker integration](file-picker-integration.md)
+- [the circular mask design](../topics/module/circular-mask-design.md)
+- [Develop and validate](../how-to/develop-and-validate.md)

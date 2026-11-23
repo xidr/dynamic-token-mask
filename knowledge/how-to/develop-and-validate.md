@@ -48,7 +48,6 @@ Before marking a Foundry version verified in the manifest, exercise the implemen
 
 ## Related
 
-- [[environment]]
-- [[topics/module/_overview]]
-- [[verify-portrait-mask-editor]]
-- [[verify-static-token-masks]]
+- [Environment](../reference/environment.md)
+- [Module overview](../topics/module/_overview.md)
+- [Verify static token masks in Foundry](verify-static-token-masks.md)

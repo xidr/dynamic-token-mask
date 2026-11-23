@@ -48,7 +48,7 @@ After the approved merge, use the designated test world with the module enabled 
 
 ## Check it worked
 
-Record the Foundry version and observations for crop placement, live player updates, reload, removal, targeting and grid footprint. These checks passed on 2026-11-23 in Foundry 14.369. See [[features/static-token-renderer]] for the observations and update it with later results.
+Record the Foundry version and observations for crop placement, live player updates, reload, removal, targeting and grid footprint. These checks passed on 2026-11-23 in Foundry 14.369. See [Static token renderer](../features/static-token-renderer.md) for the observations and update it with later results.
 
 ## If it goes wrong
 

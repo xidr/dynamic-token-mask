@@ -11,7 +11,7 @@ status: active
 
 Last verified: 2026-11-23
 
-See [[topics/model-calibration/_overview]] for the schema.
+See [Model calibration](_overview.md) for the schema.
 
 | Date | Task | Kind | Planner | Builder | Reviewer & verdict | Fix rounds | Findings | Cost / notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

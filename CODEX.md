@@ -58,9 +58,11 @@ depend on the parent session.
 
 After each build or fix, inspect the reported paths, diff and test results in the assigned worktree.
 Stage only the approved changes, check the staged diff and commit the tested batch before review.
-The planner owns Git writes. Supply the actual base revision,
-covered steps and test results to the reviewer. Give the reviewer report to the user verbatim, record accepted fixes
-in the plan and launch a fresh builder followed by a fresh reviewer. Markdown-only batches skip independent review unless requested. Request merge approval after the finish report.
+The planner owns Git writes. Give the reviewer the absolute worktree path, task branch, actual base
+revision, covered steps and check results. Present the reviewer's findings to the user,
+record accepted fixes in the plan and launch a fresh builder followed by a fresh reviewer. Apply the
+Markdown-only review exception unless the user requests independent review. Request merge approval
+after the finish report.
 
 ## Delegated roles
 
@@ -69,8 +71,9 @@ checks from `AGENTS.md` and leave the tested edits unstaged. Report changed path
 blocked step or invalid plan assumption to the planner. Leave changes to the plan to the planner.
 
 Reviewers work read-only. Independently inspect the requirements, diff and tests. Apply the repository
-checklist under “What to check” in `.agents/agents/reviewer.md`. Report actionable findings with file
-locations and the behavior that fails, or give a clean verdict and identify any unverified checks.
+checklist under “What to check” in `.agents/agents/reviewer.md`. For knowledge-base changes, run the
+[write-notes checks](knowledge/how-to/write-notes.md#check-it-worked). Report actionable findings with
+file locations and the behavior that fails, or give a clean verdict and identify any unverified checks.
 
 For a finish assignment, follow the repository checklist below.
 
@@ -87,7 +90,7 @@ The finish builder, on the worktree:
    - Found a bug → create its file in `knowledge/bugs/` and add it to the index.
    - Fixed a bug → set status `fixed`, move the file to `knowledge/bugs/fixed/`, remove
      its index entry, and add the lesson to `gotchas.md` if it generalizes.
-   - Added/renamed/removed a knowledge file → update `knowledge/index.md` or its area's `_overview.md`
+   - Added/renamed/removed a knowledge file → update `knowledge/INDEX.md` or its area's `_overview.md`
      (one-line entries, alphabetical).
    - Noticed outdated info → fix it, or mark the note outdated.
    - Calibration log → append one row to `knowledge/topics/model-calibration/codex.md` per

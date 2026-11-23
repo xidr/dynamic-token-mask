@@ -31,4 +31,4 @@ Files in this directory can be served publicly by Foundry. Keep secrets and priv
 
 ## Agent knowledge base
 
-Start with [AGENTS.md](AGENTS.md) and [knowledge/index.md](knowledge/index.md). Shared notes cover project scope, environment, validation and open design questions. Use [CODEX.md](CODEX.md) for Codex and [GEMINI.md](GEMINI.md) for Gemini Swarm.
+Start with [AGENTS.md](AGENTS.md) and [knowledge/INDEX.md](knowledge/INDEX.md). Shared notes cover project scope, environment, validation and open design questions. Use [CODEX.md](CODEX.md) for Codex and [GEMINI.md](GEMINI.md) for Gemini Swarm.

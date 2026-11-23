@@ -25,9 +25,9 @@ Dynamic Token Mask is a standalone Foundry VTT 14 module. A JavaScript service s
 
 ## Knowledge base
 
-Start at `knowledge/index.md` in the current checkout. Read the relevant topic overview and notes. Search with rg, favor recent evidence, and flag contradictions. Keep lasting knowledge in this vault.
+Start at [knowledge/INDEX.md](knowledge/INDEX.md) in the current checkout. Use its reading hints to find the relevant topic overview and notes. Search with rg, favor recent evidence, and flag contradictions. Keep lasting knowledge in this vault.
 Use topics for area overviews, reference for contracts, how-to for procedures, decisions for dated choices, features for delivered behavior, bugs for open reports and bugs/fixed for resolved reports. File surprises in gotchas.md.
-Follow `knowledge/how-to/write-notes.md` and use the templates. Verify topic claims against code and date the evidence. Ask before large restructures. At finish, update the README and notes as applicable, then list changed files.
+Use the six templates and relative Markdown links with `.md` extensions. Follow the [authoring guide](knowledge/how-to/write-notes.md) and run its [checks](knowledge/how-to/write-notes.md#check-it-worked) for knowledge-base changes. Verify topic claims against code and date the evidence. Ask before large restructures. At finish, update the README and notes as applicable, then list changed files.
 
 ## Shared with other tools
 
@@ -61,7 +61,7 @@ AGENTS.md routes Codex to CODEX.md and Gemini to GEMINI.md. Mirror What this is,
 - Do not create a worktree or edit any file yet.
 - If continuing existing work: read its worktree's `PLAN.md` and present the next batch
   of steps as the plan.
-- Otherwise read `knowledge/index.md` and open the relevant files from the main checkout.
+- Otherwise read `knowledge/INDEX.md` and open the relevant files from the main checkout.
 
 ### 2. Clarify and plan (Coordinator — Plan Phase)
 - Research first: read the relevant code and knowledge files (using `explore` on `flash`

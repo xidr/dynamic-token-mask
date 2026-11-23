@@ -22,4 +22,4 @@ source: Project setup conversation and existing server knowledge, 2026-10-22
 
 ## Related
 
-- [[environment]]
+- [Environment](environment.md)
