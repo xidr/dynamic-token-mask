@@ -178,19 +178,21 @@ export class MaskRenderer {
     token.renderFlags.set({refreshMesh: true});
   }
 
-  // TokenConfig can refresh without a redraw when returning to the placed document's path.
+  // TokenConfig and remote updates to held drags can change art through refresh alone.
   refreshPreview(token) {
-    if (token.previewType !== "config" || token.destroyed) return;
-    const src = token.document.texture.src;
+    if (token.destroyed || !["config", "dragging"].includes(token.previewType)) return;
     const state = this.#previewSources.get(token);
     if (!state) return;
     // The selection can also change while Foundry awaits a previous image load.
+    const doc = token.document;
     const base = token.texture?.baseTexture;
-    const expected = this.#getBase(src);
-    const selected = selection(token.document);
-    const subject = token.document.ring?.enabled && token.document.ring.subject?.texture;
+    // Drag clones can inherit a native video base that differs from the cache.
+    const expected = token.previewType === "config" ? this.#getBase(doc.texture.src) : null;
+    const selected = selection(doc);
+    const ringEnabled = !!doc.ring?.enabled;
+    const subject = ringEnabled && doc.ring.subject?.texture;
     const subjectBase = subject && this.#getBase(subject);
-    if (state.drawn === selected && (!expected || expected === base)
+    if (state.drawn === selected && ringEnabled === !!token.hasDynamicRing && (!expected || expected === base)
       && (!subjectBase || subjectBase === state.subjectBase)) {
       state.requested = null;
       return;

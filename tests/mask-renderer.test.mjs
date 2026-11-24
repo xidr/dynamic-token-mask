@@ -442,6 +442,79 @@ test("ring subjects share equal crops, isolate framing dimensions and track live
   assert.equal(third.disposed, 1);
 });
 
+test("a held drag redraws for remote ring subject changes and toggles while movement stays incremental", async () => {
+  const {bases, masks, make} = ringFixture();
+  const renderer = new MaskRenderer(masks, (base, record) => ({...crop(), base, record}), src => bases.get(src));
+  const drag = Object.assign(make("A.png", "B.png"), {isPreview: true, previewType: "dragging"});
+  const redraws = [];
+  drag.renderFlags.set = flags => { if (flags.redraw) redraws.push(flags); };
+  await renderer.apply(drag);
+  const firstCrop = drag.mesh.texture;
+  assert.equal(firstCrop.record, masks.get("B.png"));
+
+  for (const x of [100, 200]) {
+    drag.document.x = x;
+    renderer.refreshPreview(drag);
+  }
+  assert.deepEqual(redraws, []);
+  assert.equal(drag.mesh.texture, firstCrop);
+
+  // Foundry copies the remote update into the held clone and dispatches refreshToken.
+  drag.document._source.ring.subject.texture = drag.document.ring.subject.texture = "C.png";
+  renderer.refreshPreview(drag);
+  renderer.refreshPreview(drag);
+  assert.deepEqual(redraws, [{redraw: true}]);
+
+  // The redraw completes through drawToken and receives its own incremental refresh.
+  const nativeSubject = make("A.png", "C.png").mesh.texture;
+  drag.mesh.texture = nativeSubject;
+  await renderer.apply(drag);
+  renderer.refreshPreview(drag);
+  assert.deepEqual(redraws, [{redraw: true}]);
+  assert.equal(drag.mesh.texture, nativeSubject);
+  assert.equal(firstCrop.disposed, 1);
+
+  drag.document.ring.enabled = false;
+  renderer.refreshPreview(drag);
+  renderer.refreshPreview(drag);
+  assert.deepEqual(redraws, [{redraw: true}, {redraw: true}]);
+
+  drag.ring = null;
+  drag.hasDynamicRing = false;
+  drag.mesh.texture = drag.texture;
+  await renderer.apply(drag);
+  drag.document.x = 300;
+  renderer.refreshPreview(drag);
+  assert.deepEqual(redraws, [{redraw: true}, {redraw: true}]);
+  assert.equal(drag.mesh.texture.record, masks.get("A.png"));
+  assert.equal(drag.mesh.texture.base, bases.get("A.png"));
+  renderer.clear();
+});
+
+test("a held drag detects a ring toggle during draw when the loaded bases still match", async () => {
+  const {bases, masks, make} = ringFixture();
+  const renderer = new MaskRenderer(masks, crop, src => bases.get(src));
+  const drag = Object.assign(make("A.png"), {isPreview: true, previewType: "dragging"});
+  const redraws = [];
+  drag.renderFlags.set = flags => { if (flags.redraw) redraws.push(flags); };
+
+  // The source toggled after the native draw installed the ring and finished loading its art.
+  drag.document.ring.enabled = false;
+  await renderer.apply(drag);
+  renderer.refreshPreview(drag);
+  renderer.refreshPreview(drag);
+  assert.deepEqual(redraws, [{redraw: true}]);
+
+  drag.ring = null;
+  drag.hasDynamicRing = false;
+  drag.mesh.texture = drag.texture;
+  await renderer.apply(drag);
+  renderer.refreshPreview(drag);
+  assert.deepEqual(redraws, [{redraw: true}]);
+  assert.notEqual(drag.mesh.texture, drag.texture);
+  renderer.clear();
+});
+
 test("a pending ring crop yields to subject selection, toggles and mesh replacement", async () => {
   const {bases, masks, make} = ringFixture();
   for (const change of ["subject", "toggle", "mesh", "owner"]) {

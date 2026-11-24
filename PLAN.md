@@ -8,3 +8,5 @@ Use visible native agents, a difficult builder and an independent reviewer. Base
 4. Handle live mask edits, changing just the subject, ring toggles, stale pending work, shared crops and teardown. Cover held and scene previews, prototype behavior, and settled native transitions with intact ring composition.
 5. Run node --test, syntax checks for changed JavaScript and knowledge checks. Document baseline, implementation and pending live verification in README, ROADMAP and relevant knowledge notes. Commit, independently review and fix findings. Request approval to merge.
 6. After merge, compare canvas screenshots on GM and owning-player clients for the matrix, live edits, drag and subject switches. Check ring art and geometry against the baseline, record observations per role, and clean up fixtures. Verify changed-build behavior before claiming compatibility.
+
+Review follow-up: handle native refresh-only subject changes and ring toggles on a held drag clone. Test the remote update during a drag and verify ordinary movement does not repeatedly request redraw.
