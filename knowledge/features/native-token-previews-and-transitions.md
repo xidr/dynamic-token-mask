@@ -13,7 +13,7 @@ source: scripts/main.js, scripts/mask-renderer.mjs, scripts/prototype-mask-previ
 
 ## Request
 
-Use the selected image's own saved circle for every eligible preview and transition endpoint. Keep Foundry's normal controls, timing and document updates. Dropping, cancelling, applying or starting a subsequent change must leave the visible result consistent with the selected image.
+Use the selected image's own saved mask for every eligible preview and transition endpoint. Keep Foundry's normal controls, timing and document updates. Dropping, cancelling, applying or starting a subsequent change must leave the visible result consistent with the selected image.
 
 ## Decided
 
@@ -32,6 +32,8 @@ This batch covers ordinary static art. See the [native dynamic rings](native-dyn
 ## Implementation
 
 `scripts/main.js` wires Foundry token and prototype-sheet hooks to `scripts/mask-renderer.mjs` and `scripts/prototype-mask-preview.mjs`. The renderer and prototype tests exercise preview lifetimes, stale loads, exact sources, mask changes while previews are open, CORS-enabled prototype art and transition filter identity and cleanup.
+
+Shared rendering uses the selected outline for the same fixed square sampling frame in previews and eligible transition targets. Live checks of the additional shapes are pending. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md)
 
 ## Foundry 14.369 baseline
 

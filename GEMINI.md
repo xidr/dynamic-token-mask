@@ -2,7 +2,7 @@
 
 ## What this is
 
-Dynamic Token Mask is a standalone Foundry VTT 14 module. A JavaScript service stores one circular mask per image in a world setting. Read README.md for implementation status.
+Dynamic Token Mask is a standalone Foundry VTT 14 module. A JavaScript service stores one mask per exact image path in a world setting. Read README.md for implementation status.
 
 ## Commands
 

@@ -49,3 +49,10 @@ Renderer and sheet integrations passed automated checks. Post-merge checks ran o
 - [x] Captured native ring framing and geometry in isolated GM and owning-player sessions on Foundry 14.369. Both roles displayed the same native art in all seven subject cases, including two inferred subjects. [Baseline results](knowledge/features/native-dynamic-rings.md#foundry-14369-baseline)
 - [x] Apply the portrait mask to implicit subjects, including when Foundry infers alternate art. Explicit subjects use their own masks. Subjects without a mask retain their native framing. [Behavior and baseline](knowledge/features/native-dynamic-rings.md)
 - [x] Compared the changed build with the Foundry 14.369 baseline as GM and owning player. Both passed the subject matrix, live mask edits, drag and settled transition checks. The GM exercised sheet previews and placement. Foundry canceled held drags on remote subject redraws and ring toggles. [Post-merge results](knowledge/features/native-dynamic-rings.md#changed-build-live-verification)
+
+## 6. Support square and hexagonal masks
+
+- [x] Add square, flat-topped hexagon and pointy-topped hexagon to the editor while preserving the center and zoom on shape changes. Circle remains the default. [Editor feature record](knowledge/features/portrait-mask-editor.md)
+- [x] Share the selected outline in the editor preview, eligible token textures, native previews, transition targets and ring subject frames. Upgrade legacy storage on the first successful polygon save. [Storage contract](knowledge/reference/mask-storage.md)
+- [ ] As GM, verify shape selection, preservation of framing, reset, Cancel, reopen, stale editor conflicts, live saves and removal, reload, sheet previews and a rectangular ring subject frame.
+- [ ] As owning player, verify live changes, reload, removal, held drags, native fades, and implicit and explicit ring subjects including the rectangular frame. [Verification procedure](knowledge/how-to/verify-mask-shapes.md)

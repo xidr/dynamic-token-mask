@@ -1,25 +1,25 @@
 ---
 title: Per-image mask storage
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [feature, storage]
 status: active
 ---
 # Per-image mask storage
 
-**TL;DR:** Each exact image path can have a world-scoped circle shared by tokens using that image.
+**TL;DR:** Each exact image path can have a world-scoped mask shared by tokens using that image.
 
 ## Request
 
-Associate a circle with an individual image, including a resolved wildcard image.
+Associate one mask with an individual image, including a resolved wildcard image. Support circle, square and both regular hexagon orientations.
 
 ## Decided
 
-Store validated records in a hidden world setting. Preserve the original image and path.
+Store validated records in a hidden world setting. Preserve the original image and path. Keep legacy circles readable and upgrade the collection in the first successful polygon save. [Keep the square sampling frame for all mask shapes](../decisions/2026-11-24-mask-shapes-square-frame.md)
 
 ## Behavior
 
-A ready GM can save and remove circles. Clients can read records and subscribe to changes. See [mask storage](../reference/mask-storage.md) for the API and concurrency limits.
+A ready GM can save and remove masks. Clients can read records and subscribe to changes, including shape-only edits. A storage upgrade by itself leaves existing circle snapshots equivalent. See [mask storage](../reference/mask-storage.md) for the API and concurrency limits.
 
 ## Out of scope
 
@@ -27,4 +27,4 @@ Cross-world export. See [Portrait mask editor](portrait-mask-editor.md) and [Sta
 
 ## Implementation
 
-`scripts/mask-store.mjs`, `scripts/main.js` and `tests/mask-store.test.mjs`. Automated storage checks pass. In the 2026-11-23 Foundry 14.369 test, a GM save and removal reached a connected player, and the saved mask persisted across reconnects and browser reloads. See [Static token renderer](static-token-renderer.md).
+`scripts/mask-store.mjs`, `scripts/main.js` and `tests/mask-store.test.mjs`. Automated storage checks cover version upgrades, failed writes and retries, shape-only updates, stale saves and removes, and reopening. Polygon persistence and client synchronization are pending the designated-world check. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md) In the 2026-11-23 Foundry 14.369 test, a GM save and removal reached a connected player, and the saved mask persisted across reconnects and browser reloads. See [Static token renderer](static-token-renderer.md).

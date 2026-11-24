@@ -9,7 +9,7 @@ source: scripts/main.js, scripts/mask-renderer.mjs and tests/mask-renderer.test.
 
 # Static token renderer
 
-**TL;DR** A saved circle crops the matching portrait on ordinary static scene tokens. The renderer uses the world mask store and a temporary mesh texture.
+**TL;DR** A saved mask crops the matching portrait on ordinary static scene tokens. The renderer uses the world mask store and a temporary mesh texture.
 
 ## Request
 
@@ -17,11 +17,11 @@ Apply a saved off-center circle to every ordinary scene token using the same res
 
 ## Decided
 
-Crop the square around the selected circle and clip its corners to transparency. Let Foundry fit the resulting square using the token's existing texture settings. See [Use derived mesh textures for static token crops](../decisions/2026-11-23-static-token-mesh-crops.md).
+Sample the square frame and make pixels outside the selected mask outline transparent. A square mask fills the frame, including any existing source transparency. Let Foundry fit the resulting square using the token's existing texture settings. See [Use derived mesh textures for static token crops](../decisions/2026-11-23-static-token-mesh-crops.md).
 
 ## Behavior
 
-At ready and on draw, the renderer reads the mask for the exact image path. Received mask-setting changes reapply or remove the crop on matching scene tokens. Tokens sharing the same source base texture and mask share the crop until its last consumer releases it. A missing or unusable source or mismatched source dimensions leave the original texture in place. The renderer releases its textures on token destruction and canvas teardown.
+At ready and on draw, the renderer reads the mask for the exact image path. Received mask-setting changes reapply or remove the crop on matching scene tokens. Tokens sharing the same source base texture and mask share the crop until its last consumer releases it. A shape-only change refreshes matching crops and replaces their texture cache entry. A missing or unusable source or mismatched source dimensions leave the original texture in place. The renderer releases its textures on token destruction and canvas teardown.
 
 ## Out of scope
 
@@ -30,6 +30,8 @@ This milestone covered ordinary static scene tokens. See the [Portrait mask edit
 ## Implementation
 
 `scripts/main.js` connects Foundry hooks to `scripts/mask-renderer.mjs`. The Node tests cover crop geometry, sharing, redraw, reload, release, stale work and fallback. All 19 tests passed and the implementation review accepted the batch with no findings.
+
+The shape extension passed Node checks for off-center sampling and clipping, shape-only replacement, shared texture lifetime and late completions. Live square and hexagon checks are pending. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md)
 
 ## Runtime verification
 

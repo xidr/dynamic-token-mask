@@ -32,11 +32,13 @@ Ring-enabled prototype Appearance thumbnails retain their native rendering. Plac
 
 ## Implementation
 
-The existing Foundry hooks run `scripts/mask-renderer.mjs`. The renderer checks source identity and dimensions before installing a crop. It centers the masked pixels in a transparent texture with the native subject's dimensions and resolution, preserving the layout inputs Foundry uses for fit and ring padding. The circle's diameter is two thirds of the shorter side, matching Foundry's nominal subject diameter. Foundry still applies its native subject scale and grid fitting. Crops share a cache entry when the source, mask and output frame match. On release, the renderer restores the exact installed native texture if it still owns the mesh assignment.
+The existing Foundry hooks run `scripts/mask-renderer.mjs`. The renderer checks source identity and dimensions before installing a crop. It centers the masked pixels in a transparent texture with the native subject's dimensions and resolution, preserving the layout inputs Foundry uses for fit and ring padding. The square sampling frame's side is two thirds of the shorter texture side, matching Foundry's nominal subject diameter. The crop draws the selected outline inside that square. Foundry still applies its native subject scale and grid fitting. Crops share a cache entry when the source, mask and output frame match. On release, the renderer restores the exact installed native texture if it still owns the mesh assignment.
 
 The token update hook in `scripts/main.js` also handles a stored subject change that leaves the prepared subject path unchanged. This covers entering the inferred subject path explicitly or entering the portrait path explicitly when it is also the implicit subject. Foundry may use different fitting for the new stored choice.
 
 Renderer tests cover the subject matrix, live mask edits, subject-only preview switches, stale work, crop sharing, restoration and teardown.
+
+Node tests cover polygon subjects in rectangular ring frames and shape-only changes. Live checks of polygon crops and native ring framing are pending for both roles. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md)
 
 ## Foundry 14.369 baseline
 

@@ -9,7 +9,7 @@ source: User requirements and installed Foundry VTT 14.367 client/common source 
 
 # Circular mask design
 
-Last verified in code on 2026-11-24 against native ring subject selection. The picker adapter and editor entry point were verified on 2026-11-23. Storage, renderer and settings editor verification in Foundry 14.369 dates to 2026-11-23. The original source observations date to 2026-10-22.
+This note preserves the original circle design. On 2026-11-24, code and Node tests verified that the square framing also supports square and oriented hexagonal outlines. See [Keep the square sampling frame for all mask shapes](../../decisions/2026-11-24-mask-shapes-square-frame.md). The picker adapter and editor entry point were verified on 2026-11-23. Storage, renderer and settings editor verification in Foundry 14.369 dates to 2026-11-23. The original source observations date to 2026-10-22.
 
 **TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [mask storage](../../reference/mask-storage.md), [Static token renderer](../../features/static-token-renderer.md) and [Portrait mask editor](../../features/portrait-mask-editor.md) for the implemented behavior, and [File picker mask controls](../../features/file-picker-mask-controls.md) for the per-image controls.
 
@@ -47,7 +47,7 @@ Per-image association was subsequently confirmed by the user, including separate
 
 ## Portrait mask editor
 
-The ApplicationV2 editor opens from GM settings or the module's `openEditor(src)` API. It loads the exact path entered or selected with Foundry's image picker. The source image has a draggable circle center and radius handle. Numeric controls and a radius slider update the same constrained circle. The checkerboard preview displays the square crop with the renderer's circular clip and the source's existing transparency.
+The ApplicationV2 editor opens from GM settings or the module's `openEditor(src)` API. It loads the exact path entered or selected with Foundry's image picker. The source image has a shape selector, a draggable center and a resize handle on the selected outline. Numeric controls and a slider update the constrained square sampling frame. The checkerboard preview uses the same shape clip as the renderer and preserves the source’s existing transparency.
 
 Edits remain local until Save or Remove. An inline notice explains the effect on eligible tokens throughout the world. Each write compares the loaded mask with the current mask within the store's write queue. See [Portrait mask editor](../../features/portrait-mask-editor.md) and [mask storage](../../reference/mask-storage.md).
 
