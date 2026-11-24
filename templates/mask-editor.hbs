@@ -27,6 +27,12 @@
           <option value="hex-pointy">{{localize "DTM.ShapeHexPointy"}}</option>
         </select>
       </label>
+      <label>{{localize "DTM.BorderEnabled"}} <input name="borderEnabled" type="checkbox" disabled></label>
+      <label>{{localize "DTM.BorderColor"}} <input name="borderColor" type="color" disabled></label>
+      <label class="mask-border-width">
+        <span>{{localize "DTM.BorderWidth"}} <span class="mask-border-value"></span></span>
+        <input name="borderWidth" type="range" min="0.5" max="10" step="0.1" disabled>
+      </label>
       <label>{{localize "DTM.CenterX"}} <input name="centerX" type="number" min="0" max="100" step="any"></label>
       <label>{{localize "DTM.CenterY"}} <input name="centerY" type="number" min="0" max="100" step="any"></label>
       <label>

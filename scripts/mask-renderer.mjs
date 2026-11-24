@@ -1,4 +1,4 @@
-import {traceMaskPath} from "./mask-geometry.mjs";
+import {drawMaskBorder, traceMaskPath} from "./mask-geometry.mjs";
 
 /** Draw the selected shape in the square sampling area of the output texture. */
 export function drawCrop(canvas, image, mask, maxSize = Infinity, frame) {
@@ -16,6 +16,7 @@ export function drawCrop(canvas, image, mask, maxSize = Infinity, frame) {
   context.clip();
   context.drawImage(image, centerX * imageWidth - diameter / 2, centerY * imageHeight - diameter / 2,
     diameter, diameter, x, y, output, output);
+  drawMaskBorder(context, shape, mask.border, canvas.width / 2, canvas.height / 2, output / 2);
   // A tainted canvas cannot be uploaded to WebGL. Fail while the original is still installed.
   context.getImageData(0, 0, 1, 1);
 }

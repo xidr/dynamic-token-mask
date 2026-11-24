@@ -1,9 +1,9 @@
 import {
-  MASK_SHAPES, constrainCircle, containsMaskPoint, isSupportedStaticImage, maskRightExtent,
+  MASK_SHAPES, constrainCircle, containsMaskPoint, drawMaskBorder, isSupportedStaticImage, maskRightExtent,
   resolveImageURL, toCircle, toRecord, traceMaskPath
 } from "./mask-geometry.mjs";
 import {drawCrop} from "./mask-renderer.mjs";
-import {MaskConflictError, MODULE_ID} from "./mask-store.mjs";
+import {DEFAULT_BORDER, MaskConflictError, MODULE_ID} from "./mask-store.mjs";
 
 const {ApplicationV2, HandlebarsApplicationMixin} = foundry.applications.api;
 const localize = key => game.i18n.localize("DTM." + key);
@@ -89,6 +89,10 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#view = {
       body, source, canvas, inputs,
       shape: body.querySelector('[name="shape"]'),
+      borderEnabled: body.querySelector('[name="borderEnabled"]'),
+      borderColor: body.querySelector('[name="borderColor"]'),
+      borderWidth: body.querySelector('[name="borderWidth"]'),
+      borderValue: body.querySelector(".mask-border-value"),
       workspace: body.querySelector(".mask-workspace"),
       currentSource: body.querySelector(".mask-current-source"),
       preview: body.querySelector(".mask-preview"),
@@ -112,6 +116,10 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
     this.#view.shape.addEventListener("change", event => this.#selectShape(event.currentTarget.value));
+    const {borderEnabled, borderColor, borderWidth} = this.#view;
+    borderEnabled.addEventListener("change", () => this.#editBorder({enabled: borderEnabled.checked}));
+    borderColor.addEventListener("input", () => this.#editBorder({color: borderColor.value}));
+    borderWidth.addEventListener("input", () => this.#editBorder({widthPercent: borderWidth.valueAsNumber}));
     for (const input of Object.values(inputs)) {
       input.addEventListener("input", () => this.#numeric(input));
       input.addEventListener("blur", () => this.#syncValues());
@@ -138,7 +146,8 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     const {body, source, inputs, shape} = this.#view;
     const busy = this.#busy;
     source.disabled = busy;
-    shape.disabled = busy || !this.#image;
+    shape.disabled = this.#view.borderEnabled.disabled = busy || !this.#image;
+    this.#view.borderColor.disabled = this.#view.borderWidth.disabled = shape.disabled || !this.#mask?.border.enabled;
     for (const input of Object.values(inputs)) input.disabled = busy;
     body.querySelector('[data-action="load"]').disabled = busy;
     body.querySelector('[data-action="cancel"]').disabled = this.#writing || this.#closing;
@@ -188,7 +197,8 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
         this.#status("ReadFailed", true);
         return;
       }
-      const mask = {...toCircle(record, image.width, image.height), shape: record?.shape ?? "circle"};
+      const mask = {...toCircle(record, image.width, image.height), shape: record?.shape ?? "circle",
+        border: record?.border ?? DEFAULT_BORDER};
       const dimensionsChanged = record && (record.imageWidth !== image.width || record.imageHeight !== image.height);
       this.#image?.close();
       this.#image = image;
@@ -238,6 +248,7 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     traceMaskPath(ctx, shape, x * sx, y * sy, radius * sx, radius * sy);
     ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
     ctx.fill("evenodd");
+    drawMaskBorder(ctx, shape, this.#mask.border, x * sx, y * sy, radius * sx, radius * sy);
     ctx.beginPath();
     traceMaskPath(ctx, shape, x * sx, y * sy, radius * sx, radius * sy);
     ctx.strokeStyle = "#fff";
@@ -261,6 +272,11 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     const radiusPercent = 100 * (radius / Math.min(width, height));
     const {inputs, shape: selector} = this.#view;
     selector.value = shape;
+    const {border} = this.#mask;
+    this.#view.borderEnabled.checked = border.enabled;
+    this.#view.borderColor.value = border.color;
+    this.#view.borderWidth.value = border.widthPercent;
+    this.#view.borderValue.textContent = border.widthPercent + "%";
     const minimumPercent = 100 * (this.#minimumRadius / Math.min(width, height));
     inputs.radius.min = inputs.radiusSlider.min = minimumPercent;
     const values = {centerX: 100 * (x / width), centerY: 100 * (y / height),
@@ -333,14 +349,20 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#setMask({...this.#mask, shape});
   }
 
+  #editBorder(change) {
+    if (this.#busy || !this.#image) return;
+    this.#setMask({...this.#mask, border: {...this.#mask.border, ...change}});
+    this.#syncControls();
+  }
+
   #setFrame(frame, activeInput) {
     const {width, height} = this.#image;
     const bounded = constrainCircle(frame, width, height, this.#minimumRadius);
-    this.#setMask({...bounded, shape: this.#mask.shape}, activeInput);
+    this.#setMask({...this.#mask, ...bounded}, activeInput);
   }
 
   #setMask(next, activeInput) {
-    if (!sameFrame(next, this.#mask) || next.shape !== this.#mask.shape) {
+    if (!sameFrame(next, this.#mask) || next.shape !== this.#mask.shape || next.border !== this.#mask.border) {
       this.#mask = next;
       if (["Saved", "Removed"].includes(this.#message[0])) this.#status(null);
     }
@@ -354,12 +376,12 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
 
   #draftRecord() {
     const {width, height} = this.#image;
-    const {shape} = this.#mask;
+    const {shape, border} = this.#mask;
     const saved = this.#snapshot;
     if (saved?.imageWidth === width && saved.imageHeight === height && sameFrame(this.#mask, this.#originalMask)) {
-      return {...saved, shape};
+      return {...saved, shape, border};
     }
-    return toRecord(this.#src, this.#mask, width, height, shape);
+    return {...toRecord(this.#src, this.#mask, width, height, shape), border};
   }
 
   async persist(remove) {

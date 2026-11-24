@@ -46,6 +46,20 @@ export function traceMaskPath(context, shape = "circle", x, y, radiusX, radiusY 
   context.closePath();
 }
 
+/** Fill a concentric band whose perpendicular width is a fraction of the square crop side. */
+export function drawMaskBorder(context, shape = "circle", border, x, y, radiusX, radiusY = radiusX) {
+  if (!border?.enabled) return;
+  const sideInset = 2 * border.widthPercent / 100;
+  const innerScale = 1 - sideInset / (shape.startsWith("hex-") ? apothem : 1);
+  context.beginPath();
+  traceMaskPath(context, shape, x, y, radiusX, radiusY);
+  // Canvas arcs connect to the previous subpath unless the inner contour starts explicitly.
+  if (shape === "circle") context.moveTo(x + radiusX * innerScale, y);
+  traceMaskPath(context, shape, x, y, radiusX * innerScale, radiusY * innerScale);
+  context.fillStyle = border.color;
+  context.fill("evenodd");
+}
+
 /** Test in source-image pixels against the same convex outline used for drawing. */
 export function containsMaskPoint(shape = "circle", {x, y, radius}, point) {
   const dx = (point.x - x) / radius;

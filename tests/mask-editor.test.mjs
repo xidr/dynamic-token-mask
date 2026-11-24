@@ -35,13 +35,14 @@ function view(path) {
   const fields = {
     '[name="shape"]': element({value: "circle"}),
     "file-picker": element({value: path, ownerDocument: {baseURI: "https://foundry.example/table/game"}}),
+    ".mask-border-value": element(),
     ".mask-source": canvas(),
     ".mask-preview": canvas(),
     ".mask-workspace": element({hidden: true}),
     ".mask-current-source": element(),
     ".mask-status": element({classList: {toggle() {}}})
   };
-  for (const name of ["centerX", "centerY", "radius", "radiusSlider"]) fields['[name="' + name + '"]'] = element({name});
+  for (const name of ["centerX", "centerY", "radius", "radiusSlider", "borderEnabled", "borderColor", "borderWidth"]) fields['[name="' + name + '"]'] = element({name});
   for (const action of ["load", "reset", "remove", "save", "cancel"]) fields['[data-action="' + action + '"]'] = element();
   return {querySelector(selector) {
     assert.ok(Object.hasOwn(fields, selector), selector);
@@ -501,4 +502,45 @@ test("static container detection rejects GIF, animated PNG and animated WebP", (
   assert.equal(supports(Buffer.from("RIFF\x14\0\0\0WEBPANIM\0\0\0\0VP8L\0\0\0\0")), false);
   assert.equal(supports(Buffer.from("RIFF\x16\0\0\0WEBPVP8X\x01\0\0\0\x02\0VP8L\0\0\0\0")), false);
   assert.equal(supports(png.subarray(0, -1)), false);
+});
+
+test("border-only edits preview immediately, save, cancel and reopen with disabled preferences intact", async t => {
+  startWorld(true);
+  mockImage(t);
+  const editor = await openImage();
+  const body = editor.parts.body;
+  const enabled = body.querySelector('[name="borderEnabled"]');
+  const color = body.querySelector('[name="borderColor"]');
+  const width = body.querySelector('[name="borderWidth"]');
+  assert.equal(enabled.checked, false);
+  assert.equal(color.value, "#000000");
+  assert.equal(width.value, 2);
+  assert.equal(width.disabled, true);
+  enabled.checked = true;
+  enabled.fire("change");
+  assert.equal(color.disabled, false);
+  color.value = "#ff5500";
+  color.fire("input");
+  body.querySelector(".mask-source").operations.length = 0;
+  numeric(editor, "borderWidth", 8.5);
+  assert.equal(body.querySelector(".mask-preview").getContext("2d").fillStyle, "#ff5500");
+  const fills = body.querySelector(".mask-source").operations.filter(([op, rule]) => op === "fill" && rule === "evenodd");
+  assert.equal(fills.length, 2);
+  await editor.persist(false);
+  const border = {enabled: true, color: "#ff5500", widthPercent: 8.5};
+  assert.deepEqual(api.masks.get(sourcePath), {...original, border});
+  enabled.checked = false;
+  enabled.fire("change");
+  assert.equal(width.disabled, true);
+  await editor.persist(false);
+  assert.deepEqual(api.masks.get(sourcePath), {...original, border: {...border, enabled: false}});
+  enabled.checked = true;
+  enabled.fire("change");
+  await editor.close();
+  const reopened = await openImage();
+  const controls = reopened.parts.body;
+  assert.equal(controls.querySelector('[name="borderEnabled"]').checked, false);
+  assert.equal(controls.querySelector('[name="borderColor"]').value, border.color);
+  assert.equal(controls.querySelector('[name="borderWidth"]').value, border.widthPercent);
+  await reopened.close();
 });

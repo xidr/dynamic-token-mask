@@ -4,6 +4,8 @@ export const MODULE_ID = "dynamic-token-mask";
 export const SETTING_KEY = "masks";
 export const CHANGE_HOOK = `${MODULE_ID}.masksChanged`;
 
+export const DEFAULT_BORDER = Object.freeze({enabled: false, color: "#000000", widthPercent: 2});
+
 export class MaskConflictError extends Error {}
 
 function validateSource(src) {
@@ -39,18 +41,34 @@ export function validateMask(input) {
   // Circles keep their legacy API representation so schema upgrades preserve snapshots and cache keys.
   const record = {src, centerX, centerY, radius, imageWidth, imageHeight};
   if (Object.hasOwn(input, "shape") && input.shape !== "circle") record.shape = input.shape;
+  if (Object.hasOwn(input, "border")) {
+    const border = input.border;
+    if (typeof border?.enabled !== "boolean" || typeof border.color !== "string"
+      || !/^#[0-9a-f]{6}$/i.test(border.color)) throw new TypeError("Invalid mask border.");
+    const {enabled, widthPercent} = border;
+    if (!Number.isFinite(widthPercent) || widthPercent < 0.5 || widthPercent > 10) {
+      throw new RangeError("Mask border width must be between 0.5 and 10 percent.");
+    }
+    const color = border.color.toLowerCase();
+    if (enabled || color !== DEFAULT_BORDER.color || widthPercent !== DEFAULT_BORDER.widthPercent) {
+      record.border = {enabled, color, widthPercent};
+    }
+  }
   return record;
 }
 
 function readCollection(value) {
-  if (![1, 2].includes(value?.version) || !Array.isArray(value.masks)) {
+  if (![1, 2, 3].includes(value?.version) || !Array.isArray(value.masks)) {
     throw new Error("Unsupported or invalid mask storage format; refusing to overwrite it.");
   }
   const records = new Map();
   for (const input of value.masks) {
     const mask = validateMask(input);
-    if ((value.version === 1 && mask.shape) || (value.version === 2 && !Object.hasOwn(input, "shape"))) {
+    if ((value.version === 1 && mask.shape) || (value.version >= 2 && !Object.hasOwn(input, "shape"))) {
       throw new Error("Mask shape does not match the storage version.");
+    }
+    if (value.version < 3 && Object.hasOwn(input, "border")) {
+      throw new Error("Mask border does not match the storage version.");
     }
     if (records.has(mask.src)) throw new Error("Duplicate image path in mask storage.");
     records.set(mask.src, mask);
@@ -109,10 +127,10 @@ export class MaskStore {
     // Copy and validate before queuing: caller mutations cannot change a pending save.
     const mask = validateMask(input);
     return this.#write(mask.src, expected, async ({records, version}) => {
-      if (JSON.stringify(records.get(mask.src)) === JSON.stringify(mask)) return {...mask};
+      if (JSON.stringify(records.get(mask.src)) === JSON.stringify(mask)) return structuredClone(mask);
       records.set(mask.src, mask);
-      await this.#persist(records, mask.shape ? 2 : version);
-      return {...mask};
+      await this.#persist(records, Math.max(version, mask.border ? 3 : mask.shape ? 2 : 1));
+      return structuredClone(mask);
     });
   }
 

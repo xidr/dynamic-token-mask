@@ -100,7 +100,7 @@ test("failed persistence leaves data intact and queue recovers", async () => {
 });
 
 test("refuses unknown schemas and duplicate records without replacing data", () => {
-  assert.throws(() => setup({version: 3, masks: []}), /Unsupported/);
+  assert.throws(() => setup({version: 4, masks: []}), /Unsupported/);
   assert.throws(() => setup({version: 1, masks: [mask(), mask()]}), /Duplicate/);
 });
 
@@ -164,4 +164,50 @@ test("checks shape names, collection schema, GM permission and full square bound
   h.deny();
   await assert.rejects(h.store.save({...a, shape: "square"}), /Only a GM/);
   assert.deepEqual(h.writes, []);
+});
+
+test("borders upgrade lazily, compare canonically and protect stale snapshots", async () => {
+  const a = mask();
+  const b = {...mask("b.webp"), shape: "hex-flat"};
+  const defaults = {enabled: false, color: "#000000", widthPercent: 2};
+  const h = setup({version: 2, masks: [{...a, shape: "circle"}, b]});
+  await h.store.save({...a, border: defaults});
+  assert.deepEqual(h.writes, []);
+  const border = {enabled: false, color: "#aa00ff", widthPercent: 0.5};
+  const saved = {...a, border};
+  h.fail();
+  await assert.rejects(h.store.save(saved), /Write failed/);
+  assert.equal(h.settings.get().version, 2);
+  const pending = h.store.save({...a, border: {...border, color: "#AA00FF"}}, {expected: a});
+  assert.deepEqual(await pending, saved);
+  assert.deepEqual(h.settings.get(), {version: 3, masks: [{...saved, shape: "circle"}, b]});
+  assert.deepEqual(h.events, [[a.src]]);
+  await h.store.save(saved, {expected: {...saved, border: {...border, color: "#AA00FF"}}});
+  assert.equal(h.writes.length, 2);
+  await assert.rejects(h.store.save(a, {expected: a}), MaskConflictError);
+  await assert.rejects(h.store.remove(a.src, {expected: a}), MaskConflictError);
+  const enabled = {...saved, border: {...border, enabled: true}};
+  h.replace({version: 3, masks: [{...enabled, shape: "circle"}, b]});
+  assert.deepEqual(h.events, [[a.src], [a.src]]);
+  await h.store.save({...b, shape: "square"}, {expected: b});
+  assert.deepEqual(setup(h.settings.get()).store.get(a.src), enabled);
+  await h.store.save({...a, border: defaults}, {expected: enabled});
+  assert.deepEqual(h.store.get(a.src), a);
+  assert.equal(h.settings.get().version, 3);
+});
+
+test("validates border settings even when disabled and guards legacy schema versions", async () => {
+  const a = mask();
+  const border = {enabled: true, color: "#123456", widthPercent: 10};
+  for (const patch of [{enabled: 1}, {widthPercent: 0.499}, {widthPercent: 10.1}, {widthPercent: NaN},
+    {widthPercent: "2"}, {color: "#123"}, {color: "#001122ff"}, {color: "black"}]) {
+    assert.throws(() => validateMask({...a, border: {...border, enabled: false, ...patch}}), /border/);
+  }
+  for (const version of [1, 2]) {
+    assert.throws(() => setup({version, masks: [{...a, shape: "circle", border}]}), /version/);
+  }
+  const h = setup({version: 1, masks: [a]});
+  await h.store.save({...a, border}, {expected: a});
+  assert.equal(h.settings.get().version, 3);
+  assert.deepEqual(h.store.get(a.src), {...a, border});
 });

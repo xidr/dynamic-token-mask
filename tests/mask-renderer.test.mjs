@@ -23,7 +23,7 @@ function crop() {
 
 function cropSurface() {
   const operations = [];
-  const methods = ["beginPath", "arc", "moveTo", "lineTo", "closePath", "clip", "drawImage", "getImageData"];
+  const methods = ["beginPath", "arc", "moveTo", "lineTo", "closePath", "clip", "fill", "drawImage", "getImageData"];
   const context = Object.fromEntries(methods.map(name => [name, (...args) => operations.push([name, ...args])]));
   return {operations, getContext: () => context};
 }
@@ -112,7 +112,7 @@ test("two token wrappers share one crop until the last consumer releases it", as
 });
 
 test("a pending crop cannot overwrite removal, destruction, or a replacement mask", async t => {
-  for (const action of ["remove", "destroy", "replace", "shape", "teardown"]) {
+  for (const action of ["remove", "destroy", "replace", "shape", "border", "teardown"]) {
     await t.test(action, async () => {
       let current = mask;
       const pending = Promise.withResolvers();
@@ -128,8 +128,9 @@ test("a pending crop cannot overwrite removal, destruction, or a replacement mas
         subject.destroyed = true;
       } else if (action === "teardown") {
         renderer.clear();
-      } else if (action === "shape") {
-        current = {...mask, shape: "hex-pointy"};
+      } else if (action === "shape" || action === "border") {
+        current = action === "shape" ? {...mask, shape: "hex-pointy"}
+          : {...mask, border: {enabled: true, color: "#112233", widthPercent: 2}};
         await renderer.update([mask.src], [subject]);
       } else {
         current = action === "remove" ? null : {...mask, radius: 0.1};
@@ -137,7 +138,7 @@ test("a pending crop cannot overwrite removal, destruction, or a replacement mas
       }
       pending.resolve(oldCrop);
       await applying;
-      assert.equal(subject.mesh.texture, ["replace", "shape"].includes(action) ? newCrop : subject.texture);
+      assert.equal(subject.mesh.texture, ["replace", "shape", "border"].includes(action) ? newCrop : subject.texture);
       assert.equal(oldCrop.disposed, 1);
       renderer.clear();
     });
@@ -743,4 +744,42 @@ test("ring crops use the selected source pixels and preserve the native rectangl
   await renderer.apply(subject);
   assert.equal(subject.mesh.texture, native);
   renderer.clear();
+});
+
+test("border follows the clipped outer path with constant perpendicular inset in each output frame", () => {
+  const image = {};
+  for (const shape of ["circle", "square", "hex-flat", "hex-pointy"]) {
+    for (const widthPercent of [0.5, 2, 10]) {
+      for (const frame of [undefined, {width: 300, height: 150, diameter: 100}]) {
+        const surface = cropSurface();
+        const border = {enabled: true, color: "#aa0022", widthPercent};
+        drawCrop(surface, image, {...mask, shape, border}, 20, frame);
+        const ops = surface.operations;
+        const clip = ops.findIndex(([op]) => op === "clip");
+        const draw = ops.findIndex(([op]) => op === "drawImage");
+        const outer = ops.slice(1, clip);
+        const diameter = frame?.diameter ?? 20;
+        const inset = widthPercent * diameter / 100;
+        assert.deepEqual(ops[draw], ["drawImage", image, 130, 20, 40, 40,
+          (surface.width - diameter) / 2, (surface.height - diameter) / 2, diameter, diameter]);
+        assert.deepEqual(ops.slice(draw + 2, draw + 2 + outer.length), outer);
+        assert.deepEqual(ops.at(-2), ["fill", "evenodd"]);
+        assert.equal(surface.getContext("2d").fillStyle, border.color);
+        const inner = ops.slice(draw + 2 + outer.length, -2);
+        if (shape === "circle") {
+          assert.deepEqual(inner[1], ["arc", surface.width / 2, surface.height / 2, diameter / 2 - inset, 0, 2 * Math.PI]);
+          continue;
+        }
+        assert.deepEqual(inner.map(([op]) => op), outer.map(([op]) => op));
+        for (let i = 0; i < outer.length - 1; i++) {
+          const [, x, y] = outer[i];
+          const [, x2, y2] = outer[(i + 1) % (outer.length - 1)];
+          const [, ix, iy] = inner[i];
+          const dx = x2 - x, dy = y2 - y;
+          const distance = (dx * (iy - y) - dy * (ix - x)) / Math.hypot(dx, dy);
+          assert.ok(Math.abs(inset - distance) < 1e-10);
+        }
+      }
+    }
+  }
 });
