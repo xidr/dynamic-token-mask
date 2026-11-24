@@ -21,19 +21,76 @@ function crop() {
   }};
 }
 
-test("off-center rectangular art fills a square with a circular clip", () => {
+function cropSurface() {
   const operations = [];
-  const context = Object.fromEntries(["beginPath", "arc", "clip", "drawImage", "getImageData"].map(name =>
-    [name, (...args) => operations.push([name, ...args])]));
-  const surface = {getContext: () => context};
+  const methods = ["beginPath", "arc", "moveTo", "lineTo", "closePath", "clip", "drawImage", "getImageData"];
+  const context = Object.fromEntries(methods.map(name => [name, (...args) => operations.push([name, ...args])]));
+  return {operations, getContext: () => context};
+}
+
+function installTextureMocks(t, bases) {
+  class Image { naturalWidth = 200; naturalHeight = 100; }
+  class BaseTexture {
+    constructor(source, {resolution}) {
+      this.source = source;
+      this.width = source.width / resolution;
+      this.height = source.height / resolution;
+      this.resolution = resolution;
+    }
+  }
+  class Texture {
+    constructor(baseTexture) { Object.assign(this, crop(), {baseTexture}); }
+  }
+  const globals = {
+    HTMLImageElement: Image,
+    PIXI: {Texture, BaseTexture, SVGResource: class {}},
+    foundry: {canvas: {TextureLoader: {loader: {getCache: src => bases.get(src)}}}},
+    canvas: {app: {renderer: {gl: {MAX_TEXTURE_SIZE: 1, getParameter: () => 1024}}}},
+    document: {createElement: cropSurface}
+  };
+  for (const [key, value] of Object.entries(globals)) {
+    const prior = Object.getOwnPropertyDescriptor(globalThis, key);
+    Object.defineProperty(globalThis, key, {configurable: true, value});
+    t.after(() => prior ? Object.defineProperty(globalThis, key, prior) : delete globalThis[key]);
+  }
+  return Image;
+}
+
+test("off-center rectangular art fills a square with a circular clip", () => {
+  const surface = cropSurface();
   const image = {};
   drawCrop(surface, image, mask);
   assert.equal(surface.width, 40);
   assert.equal(surface.height, 40);
-  assert.deepEqual(operations, [
+  assert.deepEqual(surface.operations, [
     ["beginPath"], ["arc", 20, 20, 20, 0, 2 * Math.PI], ["clip"],
     ["drawImage", image, 130, 20, 40, 40, 0, 0, 40, 40], ["getImageData", 0, 0, 1, 1]
   ]);
+});
+
+test("polygon clips keep the off-center source rectangle in uncapped crops and capped previews", () => {
+  const apothem = Math.sqrt(3) / 2;
+  const outlines = {
+    square: [[1, 1], [-1, 1], [-1, -1], [1, -1]],
+    "hex-flat": [[1, 0], [0.5, apothem], [-0.5, apothem], [-1, 0], [-0.5, -apothem], [0.5, -apothem]],
+    "hex-pointy": [[0, -1], [apothem, -0.5], [apothem, 0.5], [0, 1], [-apothem, 0.5], [-apothem, -0.5]]
+  };
+  const image = {};
+  for (const [shape, vertices] of Object.entries(outlines)) {
+    for (const cap of [20, Infinity]) {
+      const surface = cropSurface();
+      drawCrop(surface, image, {...mask, shape}, cap);
+      const size = Math.min(cap, 40);
+      assert.deepEqual([surface.width, surface.height], [size, size]);
+      const half = size / 2;
+      assert.deepEqual(surface.operations, [
+        ["beginPath"],
+        ...vertices.map(([x, y], i) => [i === 0 ? "moveTo" : "lineTo", half + x * half, half + y * half]),
+        ["closePath"], ["clip"], ["drawImage", image, 130, 20, 40, 40, 0, 0, size, size],
+        ["getImageData", 0, 0, 1, 1]
+      ], `${shape} in a ${size}px frame`);
+    }
+  }
 });
 
 test("two token wrappers share one crop until the last consumer releases it", async () => {
@@ -55,7 +112,7 @@ test("two token wrappers share one crop until the last consumer releases it", as
 });
 
 test("a pending crop cannot overwrite removal, destruction, or a replacement mask", async t => {
-  for (const action of ["remove", "destroy", "replace", "teardown"]) {
+  for (const action of ["remove", "destroy", "replace", "shape", "teardown"]) {
     await t.test(action, async () => {
       let current = mask;
       const pending = Promise.withResolvers();
@@ -71,13 +128,16 @@ test("a pending crop cannot overwrite removal, destruction, or a replacement mas
         subject.destroyed = true;
       } else if (action === "teardown") {
         renderer.clear();
+      } else if (action === "shape") {
+        current = {...mask, shape: "hex-pointy"};
+        await renderer.update([mask.src], [subject]);
       } else {
         current = action === "remove" ? null : {...mask, radius: 0.1};
         await renderer.apply(subject);
       }
       pending.resolve(oldCrop);
       await applying;
-      assert.equal(subject.mesh.texture, action === "replace" ? newCrop : subject.texture);
+      assert.equal(subject.mesh.texture, ["replace", "shape"].includes(action) ? newCrop : subject.texture);
       assert.equal(oldCrop.disposed, 1);
       renderer.clear();
     });
@@ -207,13 +267,16 @@ class TransitionFilter {
   set targetTexture(texture) { this.uniforms.targetTexture = texture; }
 }
 
-test("a native transition samples the destination crop and leaves native cleanup to Foundry", async () => {
-  const subject = token();
-  const dest = {...mask, src: "B.png"};
-  const base = {};
-  const renderer = new MaskRenderer(new Map([[mask.src, mask], [dest.src, dest]]), crop, () => base);
+test("a native transition samples the polygon destination crop and leaves native cleanup to Foundry", async t => {
+  const dest = {...mask, src: "B.png", shape: "hex-flat"};
+  const bases = new Map([[mask.src, {}], [dest.src, {}]]);
+  const Image = installTextureMocks(t, bases);
+  for (const base of bases.values()) base.resource = {source: new Image()};
+  const subject = token(bases.get(mask.src));
+  const renderer = new MaskRenderer(new Map([[mask.src, mask], [dest.src, dest]]));
   await renderer.apply(subject);
   const outgoing = subject.mesh.texture;
+  assert.notEqual(outgoing, subject.texture);
   const transition = nativeAnimation(subject, dest.src);
   transition.prepared.resolve();
   const native = transition.filter.uniforms.targetTexture;
@@ -221,12 +284,27 @@ test("a native transition samples the destination crop and leaves native cleanup
   const incoming = transition.filter.uniforms.targetTexture;
   assert.notEqual(incoming, native);
   assert.equal(subject.mesh.texture, outgoing);
+  assert.deepEqual(incoming.baseTexture.source.operations.slice(1, 9), [
+    ["moveTo", 40, 20], ["lineTo", 30, 20 + 10 * Math.sqrt(3)], ["lineTo", 10, 20 + 10 * Math.sqrt(3)],
+    ["lineTo", 0, 20], ["lineTo", 10, 20 - 10 * Math.sqrt(3)], ["lineTo", 30, 20 - 10 * Math.sqrt(3)],
+    ["closePath"], ["clip"]
+  ]);
+  assert.deepEqual(incoming.baseTexture.source.operations[9],
+    ["drawImage", bases.get(dest.src).resource.source, 130, 20, 40, 40, 0, 0, 40, 40]);
+  const destinationToken = token(bases.get(dest.src));
+  destinationToken.document.texture.src = dest.src;
+  await renderer.apply(destinationToken);
+  assert.equal(destinationToken.mesh.texture, incoming);
+  renderer.release(destinationToken);
+  assert.equal(incoming.disposed, 0);
+
   transition.finished.resolve();
   await transition.finished.promise;
   assert.equal(transition.filter.uniforms.targetTexture, native);
   assert.equal(incoming.disposed, 1);
   assert.equal(outgoing.disposed, 0);
   renderer.clear();
+  assert.equal(outgoing.disposed, 1);
 });
 
 test("an interrupted target load cannot overwrite a newer transition or unmasked art", async () => {
@@ -358,10 +436,22 @@ test("setting changes refresh live previews from their first mask through replac
   assert.notEqual(replacement, shared);
   assert.notEqual(config.mesh.texture, config.texture);
 
+  const resizedConfig = config.mesh.texture;
+  masks.set(mask.src, {...masks.get(mask.src), shape: "square"});
+  await renderer.update([mask.src], [placed]);
+  const polygon = placed.mesh.texture;
+  assert.notEqual(polygon, placed.texture);
+  assert.notEqual(polygon, replacement);
+  assert.equal(drag.mesh.texture, polygon);
+  assert.notEqual(config.mesh.texture, resizedConfig);
+  assert.notEqual(config.mesh.texture, config.texture);
+  assert.equal(replacement.disposed, 1);
+  assert.equal(resizedConfig.disposed, 1);
+
   masks.delete(mask.src);
   await renderer.update([mask.src], [placed]);
   for (const t of [placed, drag, config]) assert.equal(t.mesh.texture, t.texture);
-  assert.equal(replacement.disposed, 1);
+  assert.equal(polygon.disposed, 1);
   renderer.clear();
   masks.set(mask.src, mask);
   await renderer.update([mask.src], []);
@@ -424,7 +514,7 @@ test("ring subjects share equal crops, isolate framing dimensions and track live
   await renderer.update(["A.png"], [t]);
   assert.equal(drag.mesh.texture, first);
   assert.equal(t.mesh.texture, first);
-  masks.set("B.png", {...mask, src: "B.png", radius: 0.1});
+  masks.set("B.png", {...masks.get("B.png"), shape: "hex-flat"});
   await renderer.update(["B.png"], [t]);
   assert.equal(first.disposed, 1);
   const second = drag.mesh.texture;
@@ -595,52 +685,50 @@ test("switching mask ownership with the same prepared ring image requests a redr
 
 test("ring crops use the selected source pixels and preserve the native rectangle and resolution", async t => {
   const {bases, masks, make} = ringFixture();
-  const operations = [];
-  let surface;
-  class Image { naturalWidth = 200; naturalHeight = 100; }
-  class BaseTexture {
-    constructor(source, {resolution}) {
-      this.width = source.width / resolution;
-      this.height = source.height / resolution;
-      this.resolution = resolution;
-    }
-  }
-  class Texture {
-    constructor(baseTexture) { this.baseTexture = baseTexture; }
-    destroy() {}
-  }
-  const globals = {
-    HTMLImageElement: Image,
-    PIXI: {Texture, BaseTexture, SVGResource: class {}},
-    foundry: {canvas: {TextureLoader: {loader: {getCache: src => bases.get(src)}}}},
-    canvas: {app: {renderer: {gl: {MAX_TEXTURE_SIZE: 1, getParameter: () => 1024}}}},
-    document: {createElement() {
-      const context = Object.fromEntries(["beginPath", "arc", "clip", "drawImage", "getImageData"].map(name =>
-        [name, (...args) => operations.push([name, ...args])]));
-      surface = {getContext: () => context};
-      return surface;
-    }}
-  };
-  for (const [key, value] of Object.entries(globals)) {
-    const prior = Object.getOwnPropertyDescriptor(globalThis, key);
-    Object.defineProperty(globalThis, key, {configurable: true, value});
-    t.after(() => prior ? Object.defineProperty(globalThis, key, prior) : delete globalThis[key]);
-  }
+  const Image = installTextureMocks(t, bases);
   const image = new Image();
+  const explicitImage = new Image();
   bases.get("A.png").resource = {source: image};
-  bases.get("mapped.png").resolution = 2;
+  bases.get("B.png").resource = {source: explicitImage};
+  bases.get("B.png").resolution = bases.get("mapped.png").resolution = 2;
+  masks.set("B.png", {...masks.get("B.png"), shape: "hex-pointy"});
   const renderer = new MaskRenderer(masks);
   const subject = make("A.png", null, "mapped.png", 180, 90);
   subject.document.ring.subject.scale = 0.8;
   subject.ring.colorBand.startRadius = 0.4;
   const native = subject.mesh.texture;
   await renderer.apply(subject);
-  assert.deepEqual([surface.width, surface.height], [360, 180]);
-  assert.deepEqual(operations[1], ["arc", 180, 90, 60, 0, Math.PI * 2]);
-  assert.deepEqual(operations[3], ["drawImage", image, 130, 20, 40, 40, 120, 30, 120, 120]);
   const result = subject.mesh.texture.baseTexture;
+  const surface = result.source;
+  assert.deepEqual([surface.width, surface.height], [360, 180]);
+  assert.deepEqual(surface.operations[1], ["arc", 180, 90, 60, 0, Math.PI * 2]);
+  assert.deepEqual(surface.operations[3], ["drawImage", image, 130, 20, 40, 40, 120, 30, 120, 120]);
   assert.deepEqual([result.width, result.height, result.resolution], [180, 90, 2]);
   assert.equal(subject.document.ring.subject.scale, 0.8);
+
+  masks.set("A.png", {...masks.get("A.png"), shape: "square"});
+  await renderer.update(["A.png"], [subject]);
+  const implicit = subject.mesh.texture.baseTexture.source;
+  assert.deepEqual([implicit.width, implicit.height], [360, 180]);
+  assert.deepEqual(implicit.operations.slice(1, 8), [
+    ["moveTo", 240, 150], ["lineTo", 120, 150], ["lineTo", 120, 30], ["lineTo", 240, 30],
+    ["closePath"], ["clip"], ["drawImage", image, 130, 20, 40, 40, 120, 30, 120, 120]
+  ]);
+
+  const explicit = make("A.png", "B.png", "B.png", 180, 90);
+  const explicitNative = explicit.mesh.texture;
+  await renderer.apply(explicit);
+  const explicitResult = explicit.mesh.texture.baseTexture;
+  const offset = 60 * (Math.sqrt(3) / 2);
+  assert.deepEqual([explicitResult.width, explicitResult.height, explicitResult.resolution], [180, 90, 2]);
+  assert.deepEqual(explicitResult.source.operations.slice(1, 10), [
+    ["moveTo", 180, 30], ["lineTo", 180 + offset, 60], ["lineTo", 180 + offset, 120],
+    ["lineTo", 180, 150], ["lineTo", 180 - offset, 120], ["lineTo", 180 - offset, 60],
+    ["closePath"], ["clip"], ["drawImage", explicitImage, 130, 20, 40, 40, 120, 30, 120, 120]
+  ]);
+  renderer.release(explicit);
+  assert.equal(explicit.mesh.texture, explicitNative);
+
   renderer.release(subject);
   assert.equal(subject.mesh.texture, native);
   native.width = 900;

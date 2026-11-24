@@ -1,6 +1,8 @@
-/** Draw the selected circle onto a transparent square or into a native ring frame. */
+import {traceMaskPath} from "./mask-geometry.mjs";
+
+/** Draw the selected shape in the square sampling area of the output texture. */
 export function drawCrop(canvas, image, mask, maxSize = Infinity, frame) {
-  const {imageWidth, imageHeight, centerX, centerY, radius} = mask;
+  const {imageWidth, imageHeight, centerX, centerY, radius, shape} = mask;
   const diameter = 2 * radius * Math.min(imageWidth, imageHeight);
   const size = Math.max(1, Math.min(maxSize, Math.ceil(diameter)));
   canvas.width = frame?.width ?? size;
@@ -10,7 +12,7 @@ export function drawCrop(canvas, image, mask, maxSize = Infinity, frame) {
   const y = (canvas.height - output) / 2;
   const context = canvas.getContext("2d");
   context.beginPath();
-  context.arc(canvas.width / 2, canvas.height / 2, output / 2, 0, 2 * Math.PI);
+  traceMaskPath(context, shape, canvas.width / 2, canvas.height / 2, output / 2);
   context.clip();
   context.drawImage(image, centerX * imageWidth - diameter / 2, centerY * imageHeight - diameter / 2,
     diameter, diameter, x, y, output, output);
