@@ -522,12 +522,12 @@ test("border-only edits preview immediately, save, cancel and reopen with disabl
   color.value = "#ff5500";
   color.fire("input");
   body.querySelector(".mask-source").operations.length = 0;
-  numeric(editor, "borderWidth", 8.5);
+  numeric(editor, "borderWidth", 2.04);
   assert.equal(body.querySelector(".mask-preview").getContext("2d").fillStyle, "#ff5500");
   const fills = body.querySelector(".mask-source").operations.filter(([op, rule]) => op === "fill" && rule === "evenodd");
   assert.equal(fills.length, 2);
   await editor.persist(false);
-  const border = {enabled: true, color: "#ff5500", widthPercent: 8.5};
+  const border = {enabled: true, color: "#ff5500", widthPercent: 2.04};
   assert.deepEqual(api.masks.get(sourcePath), {...original, border});
   enabled.checked = false;
   enabled.fire("change");
@@ -542,5 +542,6 @@ test("border-only edits preview immediately, save, cancel and reopen with disabl
   assert.equal(controls.querySelector('[name="borderEnabled"]').checked, false);
   assert.equal(controls.querySelector('[name="borderColor"]').value, border.color);
   assert.equal(controls.querySelector('[name="borderWidth"]').value, border.widthPercent);
+  assert.equal(controls.querySelector(".mask-border-value").textContent, "2.04%");
   await reopened.close();
 });
