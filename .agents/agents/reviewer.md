@@ -39,6 +39,14 @@ create, or delete a file, never commit, stash, or switch branches.
   Markdown links, index and template coverage, and preserved link labels and fragments. Decision
   records preserve the original reasoning and identify the successor and any partial scope.
 - **Served files:** no secrets in tracked files; keep private identifiers, campaign material and licensed text outside the served checkout.
+- **Foundry browser validation:** for runtime claims, require dated evidence from the
+  designated world. Check that the record identifies the Foundry build, role, scenario
+  and observed outcome, and lists pending steps separately. Look for HTML snapshots for
+  control checks and screenshots for canvas claims. For GM/player comparisons, confirm
+  session isolation. Check that browser profiles and artifacts stay outside Foundry
+  `Data/` and that notes omit private details. Verify that logs treat scene navigation,
+  player rejoin and player browser reload as separate checks when applicable.
+  [Use Playwright MCP for Foundry checks](../../knowledge/how-to/use-playwright-mcp-for-foundry.md)
 - **Notes by type:** a feature has its record, a fixed bug its report moved to
   `knowledge/bugs/fixed/`. Register every active note in `knowledge/INDEX.md` or its area
   `_overview.md`, alphabetically within its section, with a reading hint.

@@ -1,7 +1,7 @@
 ---
 title: File picker mask controls
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [feature, file-picker, editor]
 status: active
 source: scripts/mask-file-picker.mjs, scripts/mask-editor.mjs and tests/mask-file-picker.test.mjs
@@ -37,7 +37,7 @@ On 2026-11-23, all 40 Node tests passed. Picker tests cover gating, exact paths,
 
 ## Live acceptance
 
-Use a designated Foundry world for these checks.
+Use a designated Foundry world for these checks. Capture HTML snapshots for picker controls and canvas screenshots for the matching token crops in both sessions. [Use Playwright MCP for Foundry checks](../how-to/use-playwright-mcp-for-foundry.md)
 
 - As GM, open eligible images in all four views, including paths with spaces, Unicode or existing encoding. Confirm the editor opens the exact path Foundry selects, including case.
 - Open with mouse, Enter and Space. Check the selection and file field, then close the editor and confirm that focus returns. Repeat from a detached picker. Confirm normal row selection, submission and drag.

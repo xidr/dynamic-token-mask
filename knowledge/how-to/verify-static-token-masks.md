@@ -1,7 +1,7 @@
 ---
 title: Verify static token masks in Foundry
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [how-to, rendering, validation]
 status: active
 source: Static token renderer milestone and scripts/main.js
@@ -14,6 +14,8 @@ source: Static token renderer milestone and scripts/main.js
 ## When to use
 
 After the approved merge, use the designated test world with the module enabled and reload the browser. Connect a GM and a player to the same scene in separate sessions with both tokens visible to the player.
+
+Follow [Use Playwright MCP for Foundry checks](use-playwright-mcp-for-foundry.md) to collect canvas screenshots for both roles. Capture the original portraits, the saved crops and the restored originals on both tokens. Record rejoin and browser reload results separately if you exercise both.
 
 ## Steps
 

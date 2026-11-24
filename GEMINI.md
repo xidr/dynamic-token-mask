@@ -20,6 +20,7 @@ Dynamic Token Mask is a standalone Foundry VTT 14 module. A JavaScript service s
 - Foundry can serve the entire module directory. Keep secrets, private material, personal identifiers and rule-book content outside it. Keep rule books outside Data/.
 - Keep the module system-independent, English and Russian translation keys aligned, and module UI CSS scoped under `.dynamic-token-mask`.
 - Verify rendering in a designated test world before claiming compatibility. Obtain permission before restarting Foundry or enabling the module in a campaign. Leave unrelated systems, modules and worlds alone.
+- For authorized browser validation, follow [Use Playwright MCP for Foundry checks](knowledge/how-to/use-playwright-mcp-for-foundry.md). Use isolated GM and player sessions when comparing roles, collect HTML snapshots and rendered canvas screenshots as applicable, and record observed results and pending steps by role. Keep browser profiles and artifacts outside Foundry `Data/`.
 - For new soft game-rule boundaries, warn inline before confirmation and keep a visible marker on the result. Enforce technical, security, permission, idempotency and schema guards strictly.
 - Confirm IDE project targeting before using symbol inspections. See `knowledge/reference/ide-tools.md`.
 

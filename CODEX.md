@@ -70,8 +70,9 @@ Builders read the plan, implement only the assigned batch in the task worktree, 
 checks from `AGENTS.md` and leave the tested edits unstaged. Report changed paths and test results. Report a
 blocked step or invalid plan assumption to the planner. Leave changes to the plan to the planner.
 
-Reviewers work read-only. Independently inspect the requirements, diff and tests. Apply the repository
-checklist under “What to check” in `.agents/agents/reviewer.md`. For knowledge-base changes, run the
+Reviewers work read-only. Independently inspect the requirements, diff and tests. CLI and native
+reviewers use the [shared reviewer checklist](.agents/agents/reviewer.md#what-to-check), including its
+browser validation check for Foundry UI and canvas evidence. For knowledge-base changes, run the
 [write-notes checks](knowledge/how-to/write-notes.md#check-it-worked). Report actionable findings with
 file locations and the behavior that fails, or give a clean verdict and identify any unverified checks.
 

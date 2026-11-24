@@ -32,6 +32,8 @@ Open this folder as its own IDE project and Git repository.
 No build step is required. The main checkout under `/opt/foundry-dev/foundrydata/Data/modules/dynamic-token-mask` is the live module directory. Linked worktrees are isolated from it.
 Once Foundry discovers the module, enable it through Manage Modules in a test world and reload the browser after script changes. If it is absent from the module list, a Foundry restart may be needed.
 
+For authorized browser checks in the designated test world, see [Use Playwright MCP for Foundry checks](knowledge/how-to/use-playwright-mcp-for-foundry.md).
+
 Files in this directory can be served publicly by Foundry. Keep secrets and private material outside it.
 
 ## Agent knowledge base

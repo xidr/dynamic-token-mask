@@ -1,7 +1,7 @@
 ---
 title: Develop and validate
 created: 2026-10-22
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [development, validation]
 status: active
 source: Project setup conversation and existing server knowledge, 2026-10-22
@@ -44,12 +44,13 @@ assert keys(read("lang/en.json")) == keys(read("lang/ru.json"))
 
 For runtime testing, agree on a test world, enable the module there when authorized and reload the browser after script changes. Check browser errors and the actual token behavior. A newly added module may need Foundry to rediscover installed packages; request a restart only if needed and authorized. Keep campaign activation and service restarts under the user's control.
 
+For authorized browser checks, follow [Use Playwright MCP for Foundry checks](use-playwright-mcp-for-foundry.md) for isolated GM and player sessions, HTML snapshots and screenshots of the rendered canvas. Record observed results and pending steps for each role.
+
 Before marking a Foundry version verified in the manifest, exercise the implemented behavior on that version. Record useful findings and known compatibility limits in the knowledge base.
 
 ## Related
 
 - [Environment](../reference/environment.md)
 - [Module overview](../topics/module/_overview.md)
-- [Use Playwright MCP for Foundry checks](use-playwright-mcp-for-foundry.md)
-- [Verify the portrait mask editor in Foundry](verify-portrait-mask-editor.md)
 - [Verify static token masks in Foundry](verify-static-token-masks.md)
+- [Verify the portrait mask editor in Foundry](verify-portrait-mask-editor.md)

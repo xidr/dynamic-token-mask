@@ -1,7 +1,7 @@
 ---
 title: Verify the portrait mask editor in Foundry
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [how-to, editor, validation]
 status: active
 source: Portrait mask editor milestone and scripts/mask-editor.mjs
@@ -14,6 +14,8 @@ source: Portrait mask editor milestone and scripts/mask-editor.mjs
 ## When to use
 
 After the approved merge, use the designated test world with the module enabled and reload the browser. Connect a GM and a player in separate sessions on the same scene. Use dedicated test portraits and record the Foundry build.
+
+Follow [Use Playwright MCP for Foundry checks](use-playwright-mcp-for-foundry.md) to inspect editor and file picker controls in HTML snapshots and compare screenshots of the square preview and the GM and player token crops.
 
 ## Steps
 
