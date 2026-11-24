@@ -188,7 +188,8 @@ export class MaskRenderer {
     const state = {root, src: sheet.token.texture.src, queued: false};
     state.onChange = event => {
       if (event.target.name !== "texture.src") return;
-      const src = event.target.value;
+      // Foundry's form listener prepares the preview path before this listener runs.
+      const src = sheet.token.texture.src;
       if (src === state.src) return;
       state.src = src;
       if (src !== sheet.document.texture.src || state.queued) return;

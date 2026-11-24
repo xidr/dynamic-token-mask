@@ -797,7 +797,9 @@ test("rapid scene-sheet portrait changes queue a final draw even if C is still l
   preview.document.rendered = true;
   renderer.watchConfig(sheet, root);
   function change(src) {
-    preview.document.texture.src = root.value = src;
+    // Foundry prepares the preview document before this listener sees the raw form value.
+    preview.document.texture.src = src.trim();
+    root.value = src;
     root.dispatchEvent(new Event("change"));
   }
 
@@ -829,7 +831,7 @@ test("rapid scene-sheet portrait changes queue a final draw even if C is still l
 
   change("portraits/C.png");
   preview.mesh.texture = preview.texture = {baseTexture: c};
-  change(mask.src);
+  change(`  ${mask.src}  `);
   await Promise.resolve();
   await drawing;
   assert.equal(draws, 2);
