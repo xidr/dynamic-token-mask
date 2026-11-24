@@ -10,3 +10,5 @@ Approved workflow: visible native agents. Difficult builder and independent read
 6. Record build, role, scenario, result and pending runtime checks separately. Capture HTML snapshots and canvas screenshots. Verify changed code after approved merge unless an authorized isolated installation can serve the branch. Only mark observed passing roadmap cases complete. Dynamic ring support is batch 2. Merging requires separate approval.
 
 The user approved a guarded Foundry 14.369 transition integration if live evidence confirms the gap. Identify only the filter demonstrably tied to the active animation, use its targetTexture setter and leave unrecognized filters untouched.
+
+Review follow-up: handle CORS-enabled external prototype art using a canvas-readable image source. Refresh matching active drag and scene-sheet previews when a mask is created, replaced or removed. Add failing regressions for both findings and repeat independent review.
