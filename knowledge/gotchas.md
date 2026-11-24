@@ -20,3 +20,5 @@ In Foundry 14.369, returning a scene configuration preview to the placed token's
 An empty stored ring subject can have a populated prepared path in Foundry 14.369. This inferred path determines the native fallback art. The stored field distinguishes an explicit choice, and an implicit mask is drawn from the original portrait. [Native dynamic ring subject decision](decisions/2026-11-24-native-dynamic-ring-subjects.md)
 
 On Foundry 14.369, a remote subject change or ring toggle can redraw the original token and cancel its owner's active drag. A mask-setting edit updates the held clone in place. When testing, check the interaction state and placed token before starting a fresh drag. [Native ring verification](features/native-dynamic-rings.md#changed-build-live-verification)
+
+A range input with a fixed step can round a valid fractional value when it is assigned to the control. The border width API accepts any finite number in its range, so the editor uses `step="any"` to keep the slider and numeric readout in sync. [Colored mask borders](features/colored-mask-borders.md)

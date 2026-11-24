@@ -9,11 +9,11 @@ source: Project setup conversation, 2026-10-22, and scripts/main.js, scripts/mas
 
 # Module overview
 
-Last verified in code and Node tests on 2026-11-24 at `6f9c465` for mask shapes, storage migration and shared crop drawing. Live shape checks are pending. The preceding native ring renderer was verified at `cabdfef` in separate Foundry 14.369 GM and owning-player sessions. [Native dynamic rings](../../features/native-dynamic-rings.md)
+Last verified in code and Node tests on 2026-11-24 at `caaa2b7` for optional inward borders, schema version 3 and fractional widths in the editor. Border checks in Foundry await an approved merge. Live shape checks are tracked separately. The preceding native ring renderer was verified at `cabdfef` in separate Foundry 14.369 GM and owning-player sessions. [Native dynamic rings](../../features/native-dynamic-rings.md)
 
 On 2026-11-24, the GM and owning player tested the preceding native token workflow batch on Foundry 14.369. The native token workflow checks covered drags for both roles and configuration previews for the GM. Both clients showed the expected art during completed native fades and settled on the requested portraits after interrupted fades. [Runtime results by role](../../features/native-token-previews-and-transitions.md#foundry-14369-post-merge-verification) The first UI release was verified on 2026-11-23 in a Foundry 14.369 test world with GM and player clients. [Picker release verification](../../features/file-picker-mask-controls.md#first-ui-release) · [Renderer verification](../../features/static-token-renderer.md#first-ui-release)
 
-**TL;DR:** Dynamic Token Mask stores one circle, square or regular hexagon per image path. Hexagons can be flat-topped or pointy-topped. The shape clips a square crop. Foundry applies the token’s existing transforms to that crop. GMs manage masks through the API or the [Portrait Mask Editor](../../features/portrait-mask-editor.md), including through per-image buttons in the [built-in file picker](../../features/file-picker-mask-controls.md). Saving from the picker updated matching indicators in two open GM pickers and matching token textures on both clients. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. The editor preview matched sampled token pixels for opaque and transparent PNG crops in both sessions. The editor refits its window when loading a portrait pushes the footer below the viewport. See [editor-actions-below-viewport](../../bugs/fixed/editor-actions-below-viewport.md).
+**TL;DR:** Dynamic Token Mask stores one circle, square or regular hexagon per image path. Hexagons can be flat-topped or pointy-topped. The shape clips a square crop and can carry an optional inward border. Foundry applies the token’s existing transforms to that crop. GMs manage masks through the API or the [Portrait Mask Editor](../../features/portrait-mask-editor.md), including through per-image buttons in the [built-in file picker](../../features/file-picker-mask-controls.md). Saving from the picker updated matching indicators in two open GM pickers and matching token textures on both clients. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. The editor preview matched sampled token pixels for opaque and transparent PNG crops in both sessions. The editor refits its window when loading a portrait pushes the footer below the viewport. See [editor-actions-below-viewport](../../bugs/fixed/editor-actions-below-viewport.md).
 
 ## Details
 
@@ -22,7 +22,7 @@ On 2026-11-24, the GM and owning player tested the preceding native token workfl
 - `scripts/main.js` registers the mask store and GM editor menu, exposes the module API and connects the renderer and picker adapter to Foundry hooks. The editor uses a localized Handlebars template and module-scoped styles.
 - The renderer handles eligible drag and scene-configuration clones and recognized native transition targets. A sheet adapter crops the prototype Appearance thumbnail. [Native token previews and transitions](../../features/native-token-previews-and-transitions.md)
 - The canvas renderer uses the portrait mask for implicit dynamic ring subjects and the subject mask for explicit subjects. When a subject has no applicable mask, Foundry supplies native art. [Native dynamic rings](../../features/native-dynamic-rings.md)
-- A hidden world setting upgrades its circle-only schema on the first polygon save. See [mask storage](../../reference/mask-storage.md). No dependencies or build pipeline have been introduced.
+- A hidden world setting supports legacy circle and polygon collections and upgrades to version 3 when a mask with non-default border settings is first saved. See [mask storage](../../reference/mask-storage.md). No dependencies or build pipeline have been introduced.
 - The project has its own Git repository, initialized on `main`; no remote was configured during setup.
 
 ## Open design questions
@@ -36,6 +36,7 @@ On 2026-11-24, the GM and owning player tested the preceding native token workfl
 
 ## Related
 
+- [Colored mask borders](../../features/colored-mask-borders.md)
 - [Environment](../../reference/environment.md)
 - [Develop and validate](../../how-to/develop-and-validate.md)
 - [Standalone module](../../decisions/2026-10-22-standalone-module.md)

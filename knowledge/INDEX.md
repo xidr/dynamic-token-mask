@@ -21,6 +21,7 @@ Use the **Read when** hints to find the notes you need. The [authoring guide](ho
 - [Develop and validate](how-to/develop-and-validate.md) — local checks and runtime validation. Read when: testing a module change.
 - [Merge a task branch](how-to/merge-a-task-branch.md) — approval, checks and cleanup. Read when: preparing or carrying out an approved merge.
 - [Use Playwright MCP for Foundry checks](how-to/use-playwright-mcp-for-foundry.md) — isolated browser sessions, stdio fallback and GM/player evidence. Read when: verifying Foundry controls or rendered token art.
+- [Verify mask borders in Foundry](how-to/verify-mask-borders.md) — GM and owning-player checks for the border controls and native render paths. Read when: verifying borders in a designated world.
 - [Verify mask shapes in Foundry](how-to/verify-mask-shapes.md) — GM and owning-player checks for all four outlines. Read when: verifying mask shapes in a designated world.
 - [Verify native dynamic rings in Foundry](how-to/verify-native-dynamic-rings.md) — subject matrix, native ring baseline and both client roles. Read when: verifying ring framing and artwork in a designated world.
 - [Verify native token previews and transitions in Foundry](how-to/verify-native-token-previews-and-transitions.md) — role-based checks for held drags, configuration and image transitions. Read when: verifying native token workflows in a designated world.
@@ -30,6 +31,7 @@ Use the **Read when** hints to find the notes you need. The [authoring guide](ho
 
 ## Features
 
+- [Colored mask borders](features/colored-mask-borders.md) — optional inward borders for all four shapes. Read when: changing, using or verifying mask borders.
 - [File picker mask controls](features/file-picker-mask-controls.md) — GM edit buttons, indicators and validation. Read when: using or verifying picker controls.
 - [Native dynamic rings](features/native-dynamic-rings.md) — implicit and explicit subjects, crop lifetime and runtime evidence. Read when: changing or verifying native ring masking.
 - [Native token previews and transitions](features/native-token-previews-and-transitions.md) — crop behavior in drags, configuration and native animation. Read when: changing or verifying native token previews or transitions.
@@ -49,6 +51,7 @@ No open bug records.
 
 - [Augment native file picker rows](decisions/2026-11-23-native-file-picker-rows.md) — hook-based integration, exact paths and window ownership. Read when: changing the picker integration.
 - [Common conventions for module knowledge](decisions/2026-11-23-v13-knowledge-conventions.md) — relative links, six templates and decision metadata. Read when: writing, moving or reviewing notes.
+- [Draw borders inside the mask outline](decisions/2026-11-24-inward-mask-borders.md) — shared crop geometry and lazy version 3 migration. Read when: changing how borders are drawn or stored.
 - [Frame targets in native token transitions](decisions/2026-11-24-native-token-transition-targets.md) — filter identity and texture lifetimes. Read when: changing how native transitions get their crops.
 - [Keep the square sampling frame for all mask shapes](decisions/2026-11-24-mask-shapes-square-frame.md) — common geometry and lazy storage migration. Read when: changing shape framing or the mask schema.
 - [Knowledge base and workflow setup](decisions/2026-11-23-kb-and-workflow-setup.md) (replaced in part by [Common conventions for module knowledge](decisions/2026-11-23-v13-knowledge-conventions.md)) — the successor adopts relative Markdown links, `INDEX.md`, six templates and standardized decision records. Read when: tracing Codex and Gemini roles, approvals or calibration.

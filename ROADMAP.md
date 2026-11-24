@@ -56,3 +56,10 @@ Renderer and sheet integrations passed automated checks. Post-merge checks ran o
 - [x] Share the selected outline in the editor preview, eligible token textures, native previews, transition targets and ring subject frames. Upgrade legacy storage on the first successful polygon save. [Storage contract](knowledge/reference/mask-storage.md)
 - [ ] As GM, verify shape selection, preservation of framing, reset, Cancel, reopen, stale editor conflicts, live saves and removal, reload, sheet previews and a rectangular ring subject frame.
 - [ ] As owning player, verify live changes, reload, removal, held drags, native fades, and implicit and explicit ring subjects including the rectangular frame. [Verification procedure](knowledge/how-to/verify-mask-shapes.md)
+
+## 7. Add optional colored borders to masks
+
+- [x] Add a toggle, color picker and width slider for all four shapes. Keep the border inside the existing outline and remember custom preferences when it is turned off. [Colored mask borders](knowledge/features/colored-mask-borders.md)
+- [x] Read existing mask records and upgrade to schema 3 on the first successful save with non-default border settings. [Storage contract](knowledge/reference/mask-storage.md)
+- [ ] As GM, check the controls, fractional width, preview, border-only saves, Cancel, reopening, removal and sheet previews.
+- [ ] As GM and owning player, check the placed crops, live changes, reload, held drags, native fades and implicit and explicit ring subjects, including a rectangular subject frame. [Verification procedure](knowledge/how-to/verify-mask-borders.md)

@@ -20,6 +20,8 @@ The dynamic ring renderer uses the portrait's mask for an implicit subject and t
 
 Automated checks cover all four shapes in storage, the editor and shared rendering. Live verification of square and hexagonal crops is pending for both GM and owning-player sessions. [Mask shape verification](knowledge/how-to/verify-mask-shapes.md)
 
+A GM can use **Show border** on any shape, choose a color and set the width to 0.5–10% of the square crop side. The default is off, with black at 2%. Turning the border off keeps its color and width for later. The border sits inside the outline and appears in the editor preview and eligible token render paths. Automated checks passed. Foundry GM and owning-player verification of borders is pending deployment. [Colored mask borders](knowledge/features/colored-mask-borders.md)
+
 ## Development
 
 Open this folder as its own IDE project and Git repository.
