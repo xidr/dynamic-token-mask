@@ -20,6 +20,7 @@ Use the **Read when** hints to find the notes you need. The [authoring guide](ho
 
 - [Develop and validate](how-to/develop-and-validate.md) — local checks and runtime validation. Read when: testing a module change.
 - [Merge a task branch](how-to/merge-a-task-branch.md) — approval, checks and cleanup. Read when: preparing or carrying out an approved merge.
+- [Use Playwright MCP for Foundry checks](how-to/use-playwright-mcp-for-foundry.md) — browser setup, join steps and canvas evidence. Read when: verifying Foundry UI from Codex.
 - [Verify static token masks in Foundry](how-to/verify-static-token-masks.md) — GM and player runtime checks. Read when: verifying the renderer in a designated world.
 - [Verify the portrait mask editor in Foundry](how-to/verify-portrait-mask-editor.md) — preview, persistence and error checks. Read when: verifying the editor in a designated world.
 - [Write project notes](how-to/write-notes.md) — templates and index coverage. Read when: writing, moving or reviewing notes.
