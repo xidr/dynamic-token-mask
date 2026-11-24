@@ -16,6 +16,8 @@ Masks apply to the exact resolved image. In the live checks, switching to an unr
 
 The native token workflow batch covers held drag previews, scene-token configuration previews, prototype Appearance thumbnails and targets in recognized native image transitions. In Foundry 14.369, held drag, drop and cancel passed for the GM and owning player. The GM verified scene-token and prototype Appearance previews, including Cancel and Apply. Both clients saw the expected portrait framing during completed native fades and the correct final portraits after interrupted fades. Mask creation, replacement and removal refreshed matching previews while they were open. The test owner's native permissions prevented opening the configuration sheets and placing tokens. [Native token previews and transitions](knowledge/features/native-token-previews-and-transitions.md)
 
+The dynamic ring renderer uses the portrait's mask for an implicit subject and the subject image's own mask for an explicit one. When Foundry infers alternate subject art, a saved portrait mask uses the original portrait pixels. Without an applicable mask, the ring displays native subject art. In the Foundry 14.369 baseline, both roles displayed the same native art across seven fixtures. Changed-build canvas checks on Foundry 14.369 are pending for the GM and owning player. [Native dynamic rings](knowledge/features/native-dynamic-rings.md)
+
 ## Development
 
 Open this folder as its own IDE project and Git repository.

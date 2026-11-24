@@ -27,7 +27,7 @@ Use the existing crop renderer for canvas meshes and share crops across eligible
 
 ## Out of scope
 
-This batch covers ordinary static art. Dynamic rings have a separate roadmap batch. Unsupported image sources and unresolved wildcards keep their native behavior.
+This batch covers ordinary static art. See the [native dynamic rings](native-dynamic-rings.md) record for the subsequent ring workflow. Unsupported image sources and unresolved wildcards keep their native behavior.
 
 ## Implementation
 

@@ -46,5 +46,6 @@ Renderer and sheet integrations passed automated checks. Post-merge checks ran o
 
 ### Batch 2. Native dynamic rings
 
-- [ ] Apply the mask for the resolved ring subject image. With an implicit subject, use the token portrait’s mask. With an explicit subject, use that image’s own mask.
-- [ ] Verify both subject modes on GM and player clients. Include a masked token portrait paired with an unmasked explicit subject. The subject retains its original framing in that case, and the ring artwork stays intact in every case.
+- [x] Captured native ring framing and geometry in isolated GM and owning-player sessions on Foundry 14.369. Both roles displayed the same native art in all seven subject cases, including two inferred subjects. [Baseline results](knowledge/features/native-dynamic-rings.md#foundry-14369-baseline)
+- [x] Apply the portrait mask to implicit subjects, including when Foundry infers alternate art. Explicit subjects use their own masks. Subjects without a mask retain their native framing. [Behavior and baseline](knowledge/features/native-dynamic-rings.md)
+- [ ] Compare the changed build against the Foundry 14.369 baseline in GM and owning-player sessions. Check the subject matrix, live mask edits, held drags, subject switches, ring toggles, configuration previews and settled native transitions. Compare ring artwork, effects, layout and footprint, and record any role limitations. [Verification procedure](knowledge/how-to/verify-native-dynamic-rings.md)

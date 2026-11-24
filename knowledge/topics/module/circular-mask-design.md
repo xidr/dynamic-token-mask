@@ -1,7 +1,7 @@
 ---
 title: Circular mask design
 created: 2026-10-22
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [module, design, rendering]
 status: active
 source: User requirements and installed Foundry VTT 14.367 client/common source inspection, 2026-10-22
@@ -9,7 +9,7 @@ source: User requirements and installed Foundry VTT 14.367 client/common source 
 
 # Circular mask design
 
-Last verified: 2026-11-23 (picker adapter and editor entry point). Storage, renderer and settings editor verification in Foundry 14.369 dates to 2026-11-23. Foundry source observations below date to 2026-10-22.
+Last verified in code on 2026-11-24 against native ring subject selection. The picker adapter and editor entry point were verified on 2026-11-23. Storage, renderer and settings editor verification in Foundry 14.369 dates to 2026-11-23. The original source observations date to 2026-10-22.
 
 **TL;DR:** Preserve original image files and token image paths. This note records the original design and Foundry 14.367 source observations. See [mask storage](../../reference/mask-storage.md), [Static token renderer](../../features/static-token-renderer.md) and [Portrait mask editor](../../features/portrait-mask-editor.md) for the implemented behavior, and [File picker mask controls](../../features/file-picker-mask-controls.md) for the per-image controls.
 
@@ -63,11 +63,15 @@ Browser-generated texture alpha should pass through Foundry's existing color/dep
 
 Dynamic rings, drag/configuration previews and image-change transitions need explicit integration. Prototype hook behavior and transition completion behavior must be tested. If hooks cannot handle a path cleanly, isolate a narrow compatibility wrapper rather than replace the Token class or global image loader. No dependency or wrapper API is chosen yet. Video/animated-image masking is outside the proposed initial static-image release; preserve normal rendering for those resources.
 
+## Native ring subject selection
+
+Foundry 14.369 can infer alternate ring subject art while the stored subject field is empty. With a portrait mask, an implicit subject uses the original portrait pixels. With a stored subject, the renderer uses that image's mask when available. Otherwise Foundry supplies native art. [Native dynamic rings](../../features/native-dynamic-rings.md)
+
 ## Broader runtime validation
 
 Foundry 14.369 testing covered shared crops, unmasked tokens, GM and player updates after save and removal, and persistence across browser reloads. The editor preview matched sampled token pixels for wide off-center and transparent PNGs, and the editor reported missing and unsupported images. See [Verify static token masks in Foundry](../../how-to/verify-static-token-masks.md) and [Portrait mask editor](../../features/portrait-mask-editor.md).
 
-Broader test-world validation still needs to cover scene changes, wildcard resolution, rotation, mirroring, scale and fit, drag and configuration previews, source changes and transitions, rings with and without explicit subjects, visibility, tint, alpha, detection and occlusion, cache cleanup and renderer fallback after failed loads. Continue checking gameplay footprint, vision and targeting in those cases. Verify that disabling the module restores original images after reload.
+The first UI release exercised scene changes, wildcard resolution, rotation, mirroring, scale, fit, targeting, vision and overhead occlusion. [Static token renderer verification](../../features/static-token-renderer.md#first-ui-release) The subsequent native workflow checks covered drags, configuration previews and transitions. [Native workflow verification](../../features/native-token-previews-and-transitions.md#foundry-14369-post-merge-verification) Changed-build live tests for ring subjects, ring decoration and ring previews are pending. Renderer fallback after failed loads, cache cleanup, and dedicated visibility, tint, alpha and detection checks remain broader validation cases. [Native ring checks](../../how-to/verify-native-dynamic-rings.md)
 
 ## Related
 

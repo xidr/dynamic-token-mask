@@ -25,7 +25,7 @@ At ready and on draw, the renderer reads the mask for the exact image path. Rece
 
 ## Out of scope
 
-This milestone covered ordinary static scene tokens. See the [Portrait mask editor](portrait-mask-editor.md) and [File picker mask controls](file-picker-mask-controls.md) for GM editing, and [Native token previews and transitions](native-token-previews-and-transitions.md) for the later preview and transition integrations. Dynamic rings and animated images are outside this renderer's scope.
+This milestone covered ordinary static scene tokens. See the [Portrait mask editor](portrait-mask-editor.md) and [File picker mask controls](file-picker-mask-controls.md) for GM editing, and [Native token previews and transitions](native-token-previews-and-transitions.md) for the later preview and transition integrations. The later [native dynamic ring renderer](native-dynamic-rings.md) applies masks to static ring subjects. Animated images are outside scope.
 
 ## Implementation
 
