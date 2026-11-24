@@ -44,8 +44,11 @@ Hooks.once("ready", () => {
   for (const token of globalThis.canvas?.tokens?.placeables ?? []) applyMask(token);
 });
 Hooks.on("drawToken", applyMask);
-Hooks.on("updateToken", doc => {
+Hooks.on("updateToken", (doc, changed) => {
   if (!doc.rendered || !renderer) return;
+  if (changed.ring?.subject && ("texture" in changed.ring.subject)) {
+    renderer.subjectChanged(doc.object).catch(error => console.warn("Dynamic Token Mask | Could not refresh ring subject.", error));
+  }
   const {CanvasAnimation} = foundry.canvas.animation;
   renderer.transition(doc.object, name => CanvasAnimation.getAnimation(name),
     foundry.canvas.rendering.filters.TextureTransitionFilter)

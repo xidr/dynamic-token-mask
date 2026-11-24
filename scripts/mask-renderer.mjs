@@ -1,20 +1,24 @@
-/** Draw only the selected source pixels into a transparent, square texture. */
-export function drawCrop(canvas, image, mask, maxSize = Infinity) {
+/** Draw the selected circle onto a transparent square or into a native ring frame. */
+export function drawCrop(canvas, image, mask, maxSize = Infinity, frame) {
   const {imageWidth, imageHeight, centerX, centerY, radius} = mask;
   const diameter = 2 * radius * Math.min(imageWidth, imageHeight);
   const size = Math.max(1, Math.min(maxSize, Math.ceil(diameter)));
-  canvas.width = canvas.height = size;
+  canvas.width = frame?.width ?? size;
+  canvas.height = frame?.height ?? size;
+  const output = frame?.diameter ?? size;
+  const x = (canvas.width - output) / 2;
+  const y = (canvas.height - output) / 2;
   const context = canvas.getContext("2d");
   context.beginPath();
-  context.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI);
+  context.arc(canvas.width / 2, canvas.height / 2, output / 2, 0, 2 * Math.PI);
   context.clip();
   context.drawImage(image, centerX * imageWidth - diameter / 2, centerY * imageHeight - diameter / 2,
-    diameter, diameter, 0, 0, size, size);
+    diameter, diameter, x, y, output, output);
   // A tainted canvas cannot be uploaded to WebGL. Fail while the original is still installed.
   context.getImageData(0, 0, 1, 1);
 }
 
-function createCrop(base, mask) {
+function createCrop(base, mask, frame) {
   // Token._draw can silently substitute Foundry's fallback art after a failed load.
   if (foundry.canvas.TextureLoader.loader.getCache(mask.src) !== base) return null;
   const image = base.resource?.source;
@@ -25,15 +29,38 @@ function createCrop(base, mask) {
   const width = isImage ? image.naturalWidth : image.width;
   const height = isImage ? image.naturalHeight : image.height;
   if (width !== mask.imageWidth || height !== mask.imageHeight) return null;
+  if (frame) {
+    const gl = canvas.app.renderer.gl;
+    if (Math.max(frame.width, frame.height) > gl.getParameter(gl.MAX_TEXTURE_SIZE)) return null;
+  }
   const surface = document.createElement("canvas");
-  drawCrop(surface, image, mask);
-  return new PIXI.Texture(new PIXI.BaseTexture(surface));
+  drawCrop(surface, image, mask, Infinity, frame);
+  return new PIXI.Texture(new PIXI.BaseTexture(surface, {resolution: frame?.resolution ?? 1}));
 }
 
 function eligible(token) {
   const supportedPreview = !token.isPreview || ["dragging", "config"].includes(token.previewType);
-  return !token.destroyed && supportedPreview && !token.document.ring?.enabled
+  return !token.destroyed && supportedPreview
     && token.mesh && !token.mesh.destroyed && token.texture?.baseTexture;
+}
+
+// A prepared ring subject can be inferred from a portrait even when the two files differ.
+function maskPath(doc) {
+  return (doc.ring?.enabled && doc._source?.ring?.subject?.texture) || doc.texture.src;
+}
+
+function selection(doc) {
+  return JSON.stringify([doc.texture.src, !!doc.ring?.enabled, doc.ring?.subject?.texture, doc._source?.ring?.subject?.texture]);
+}
+
+function ringFrame(original) {
+  const resolution = original.baseTexture.resolution ?? 1;
+  const width = Math.round(original.width * resolution);
+  const height = Math.round(original.height * resolution);
+  if (!(Number.isSafeInteger(width) && width > 0 && Number.isSafeInteger(height) && height > 0)) return null;
+  // Foundry's standard subject occupies the central two thirds of a square ring asset.
+  // Retain the installed texture dimensions for native padding, UVs and mesh sizing.
+  return {width, height, resolution, diameter: Math.min(width, height) * 2 / 3};
 }
 
 export class MaskRenderer {
@@ -44,6 +71,7 @@ export class MaskRenderer {
   #transitions = new Map();
   #chains = new WeakSet();
   #previewSources = new Map();
+  #drawnRings = new WeakMap();
   // Foundry can supply distinct texture wrappers around one shared image.
   #byBase = new WeakMap();
 
@@ -53,15 +81,15 @@ export class MaskRenderer {
     this.#getBase = getBase;
   }
 
-  #acquire(base, mask) {
+  #acquire(base, mask, frame = null) {
     let group = this.#byBase.get(base);
     if (!group) this.#byBase.set(base, group = new Map());
-    const key = JSON.stringify(mask);
+    const key = JSON.stringify([mask, frame]);
     let entry = group.get(key);
     if (!entry) {
       entry = {group, key, refs: 0, texture: null};
       group.set(key, entry);
-      entry.ready = Promise.resolve().then(() => entry.refs ? this.#create(base, mask) : null)
+      entry.ready = Promise.resolve().then(() => entry.refs ? this.#create(base, mask, frame) : null)
         .then(texture => {
           if (entry.refs) entry.texture = texture;
           else texture?.destroy(true);
@@ -72,11 +100,16 @@ export class MaskRenderer {
   }
 
   apply(token) {
+    this.#releaseCrop(token);
+    const doc = token.document;
+    if (doc.ring?.enabled) {
+      this.#drawnRings.set(token, {subject: doc.ring.subject?.texture, stored: doc._source?.ring?.subject?.texture});
+    } else this.#drawnRings.delete(token);
     // Track drawn previews even when the selected portrait has no mask yet.
     if (!token.destroyed && ["config", "dragging"].includes(token.previewType)) {
       const state = this.#previewSources.get(token) ?? {};
-      state.drawn = token.document.texture.src;
-      state.ring = !!token.document.ring?.enabled;
+      state.drawn = selection(token.document);
+      state.subjectBase = token.mesh?.texture?.baseTexture;
       this.#previewSources.set(token, state);
     }
     return this.#applyMask(token);
@@ -85,26 +118,59 @@ export class MaskRenderer {
   async update(paths, placeables) {
     const pending = [];
     for (const token of new Set([...placeables, ...this.#previewSources.keys()])) {
-      if (paths.includes(token.document.texture.src)) pending.push(this.#applyMask(token));
+      if (paths.includes(maskPath(token.document))) {
+        this.#releaseCrop(token);
+        pending.push(this.#applyMask(token));
+      }
     }
     await Promise.all(pending);
   }
 
+  // Switching between a mapped implicit subject and the very same explicit file
+  // can change mask ownership or native fitting without changing the animation texture paths.
+  async subjectChanged(token) {
+    const drawn = this.#drawnRings.get(token);
+    if (!drawn) return;
+    const contexts = [...token.animationContexts.values()].filter(c => c.to?.ring?.subject || c.to?.texture?.src);
+    if (contexts.length) await Promise.all(contexts.map(c => c.promise));
+    const doc = token.document;
+    if (this.#drawnRings.get(token) === drawn && !token.destroyed && doc.ring?.enabled
+      && drawn.subject === doc.ring.subject.texture && drawn.stored !== doc._source?.ring?.subject?.texture) {
+      token.renderFlags.set({redraw: true});
+    }
+  }
+
   async #applyMask(token) {
-    this.#releaseCrop(token);
-    if (!eligible(token) || token.mesh.texture !== token.texture) return;
-    const src = token.document.texture.src;
+    if (!eligible(token)) return;
+    const doc = token.document;
+    const src = maskPath(doc);
     if (!src?.trim() || src.includes("*")) return;
     const mask = this.#masks.get(src);
     if (!mask) return;
-    const {mesh, texture: original} = token;
-    const entry = this.#acquire(original.baseTexture, mask);
+    const {mesh, texture: portrait} = token;
+    const original = mesh.texture;
+    const selected = selection(doc);
+    let base = portrait.baseTexture;
+    let frame = null;
+    if (doc.ring?.enabled) {
+      if (!token.hasDynamicRing || !token.ring || !original?.baseTexture) return;
+      const subject = doc.ring.subject?.texture;
+      if (!subject || this.#getBase(subject) !== original.baseTexture
+        || original.baseTexture.resource?.source?.tagName === "VIDEO") return;
+      if (doc._source?.ring?.subject?.texture) {
+        if (src !== subject) return;
+        base = original.baseTexture;
+      } else if (this.#getBase(src) !== base) return;
+      frame = ringFrame(original);
+      if (!frame) return;
+    } else if (original !== portrait) return;
+    const entry = this.#acquire(base, mask, frame);
     const state = {mesh, original, entry};
     this.#tokens.set(token, state);
     await entry.ready;
     if (this.#tokens.get(token) !== state) return;
-    if (!entry.texture || !eligible(token) || token.document.texture.src !== src
-      || token.mesh !== mesh || token.texture !== original || mesh.texture !== original) {
+    if (!entry.texture || !eligible(token) || selection(token.document) !== selected
+      || token.mesh !== mesh || token.texture !== portrait || mesh.texture !== original) {
       this.#releaseCrop(token);
       return;
     }
@@ -121,19 +187,23 @@ export class MaskRenderer {
     // The selection can also change while Foundry awaits a previous image load.
     const base = token.texture?.baseTexture;
     const expected = this.#getBase(src);
-    const ring = !!token.document.ring?.enabled;
-    if (state.drawn === src && state.ring === ring && (!expected || expected === base)) {
+    const selected = selection(token.document);
+    const subject = token.document.ring?.enabled && token.document.ring.subject?.texture;
+    const subjectBase = subject && this.#getBase(subject);
+    if (state.drawn === selected && (!expected || expected === base)
+      && (!subjectBase || subjectBase === state.subjectBase)) {
       state.requested = null;
       return;
     }
-    if (state.requested === src && state.requestedRing === ring && state.base === base) return;
-    state.requestedRing = ring;
-    state.requested = src;
+    if (state.requested === selected && state.base === base && state.requestedSubject === state.subjectBase) return;
+    state.requestedSubject = state.subjectBase;
+    state.requested = selected;
     state.base = base;
     token.renderFlags.set({redraw: true});
   }
 
   release(token, refresh = true) {
+    this.#drawnRings.delete(token);
     this.#previewSources.delete(token);
     this.#releaseCrop(token, refresh);
   }
@@ -224,6 +294,7 @@ export class MaskRenderer {
   }
 
   clear() {
+    this.#drawnRings = new WeakMap();
     this.#previewSources.clear();
     this.#chains = new WeakSet();
     for (const context of this.#transitions.keys()) this.#releaseTarget(context);
