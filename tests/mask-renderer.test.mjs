@@ -140,3 +140,189 @@ test("previews, rings and unsupported image resources retain their textures", as
   }
   assert.equal(attempts, 1);
 });
+
+test("drag and configuration clones own independent leases on their selected image", async () => {
+  const secondPath = "portraits/two.webp";
+  const secondMask = {...mask, src: secondPath, centerX: 0.25};
+  const masks = new Map([[mask.src, mask], [secondPath, secondMask]]);
+  const renderer = new MaskRenderer(masks, crop);
+  const placed = token();
+  await renderer.apply(placed);
+  const placedCrop = placed.mesh.texture;
+  for (const previewType of ["dragging", "config"]) {
+    const preview = token(placed.texture.baseTexture);
+    Object.assign(preview, {isPreview: true, previewType});
+    await renderer.apply(preview);
+    assert.equal(preview.mesh.texture, placedCrop);
+    preview.document.texture.src = secondPath;
+    preview.texture = preview.mesh.texture = {baseTexture: {}};
+    await renderer.apply(preview);
+    const secondCrop = preview.mesh.texture;
+    assert.notEqual(secondCrop, placedCrop);
+    assert.notEqual(secondCrop, preview.texture);
+    preview.document.texture.src = "portraits/unmasked.png";
+    preview.texture = preview.mesh.texture = {baseTexture: {}};
+    await renderer.apply(preview);
+    assert.equal(preview.mesh.texture, preview.texture);
+    assert.equal(secondCrop.disposed, 1);
+    renderer.release(preview, false);
+    assert.equal(placed.mesh.texture, placedCrop);
+    assert.equal(placedCrop.disposed, 0);
+  }
+  renderer.clear();
+  assert.equal(placedCrop.disposed, 1);
+});
+
+test("returning a config preview to its initial path requests a single native redraw", async () => {
+  const subject = token();
+  Object.assign(subject, {isPreview: true, previewType: "config"});
+  const renderer = new MaskRenderer(new Map(), crop, () => null);
+  let redraws = 0;
+  subject.renderFlags.set = flags => { assert.deepEqual(flags, {redraw: true}); redraws++; };
+  subject.document.texture.src = "faces/C.png";
+  await renderer.apply(subject);
+  subject.document.texture.src = mask.src;
+  renderer.refreshPreview(subject);
+  renderer.refreshPreview(subject);
+  assert.equal(redraws, 1);
+  subject.texture = subject.mesh.texture = {baseTexture: {}};
+  await renderer.apply(subject);
+  renderer.refreshPreview(subject);
+  assert.equal(redraws, 1);
+});
+
+function nativeAnimation(subject, src, filter = new TransitionFilter()) {
+  const prepared = Promise.withResolvers();
+  const finished = Promise.withResolvers();
+  const context = {name: "token", to: {texture: {src}}, chain: [], promise: finished.promise};
+  const animation = {context: subject, wait: prepared.promise,
+    attributes: [{attribute: "progress", parent: filter.uniforms}]};
+  subject.mesh.filters = [filter];
+  subject.animationContexts = new Map([[context.name, context]]);
+  return {context, filter, prepared, finished, getAnimation: () => animation};
+}
+
+class TransitionFilter {
+  uniforms = {targetTexture: {native: true}};
+  set targetTexture(texture) { this.uniforms.targetTexture = texture; }
+}
+
+test("a native transition samples the destination crop and leaves native cleanup to Foundry", async () => {
+  const subject = token();
+  const dest = {...mask, src: "B.png"};
+  const base = {};
+  const renderer = new MaskRenderer(new Map([[mask.src, mask], [dest.src, dest]]), crop, () => base);
+  await renderer.apply(subject);
+  const outgoing = subject.mesh.texture;
+  const transition = nativeAnimation(subject, dest.src);
+  transition.prepared.resolve();
+  const native = transition.filter.uniforms.targetTexture;
+  await renderer.transition(subject, transition.getAnimation, TransitionFilter);
+  const incoming = transition.filter.uniforms.targetTexture;
+  assert.notEqual(incoming, native);
+  assert.equal(subject.mesh.texture, outgoing);
+  transition.finished.resolve();
+  await transition.finished.promise;
+  assert.equal(transition.filter.uniforms.targetTexture, native);
+  assert.equal(incoming.disposed, 1);
+  assert.equal(outgoing.disposed, 0);
+  renderer.clear();
+});
+
+test("an interrupted target load cannot overwrite a newer transition or unmasked art", async () => {
+  const subject = token();
+  const dest = {...mask, src: "B.png"};
+  const renderer = new MaskRenderer(new Map([[dest.src, dest]]), crop, () => ({}));
+  const first = nativeAnimation(subject, dest.src);
+  const stale = renderer.transition(subject, first.getAnimation, TransitionFilter);
+  const second = nativeAnimation(subject, "C.png");
+  second.prepared.resolve();
+  first.finished.resolve();
+  await renderer.transition(subject, second.getAnimation, TransitionFilter);
+  first.prepared.resolve();
+  await stale;
+  assert.equal(first.filter.uniforms.targetTexture.native, true);
+  assert.equal(second.filter.uniforms.targetTexture.native, true);
+  second.finished.resolve();
+  renderer.clear();
+});
+
+test("ambiguous or unrecognized native animations leave their filters untouched", async () => {
+  const subject = token();
+  const renderer = new MaskRenderer(new Map([[mask.src, mask]]), crop, () => ({}));
+  const active = nativeAnimation(subject, mask.src);
+  active.prepared.resolve();
+  const other = new TransitionFilter();
+  subject.mesh.filters.push(other);
+  active.getAnimation().attributes.push({attribute: "progress", parent: other.uniforms});
+  await renderer.transition(subject, active.getAnimation, TransitionFilter);
+  assert.equal(active.filter.uniforms.targetTexture.native, true);
+  assert.equal(other.uniforms.targetTexture.native, true);
+  delete active.getAnimation().attributes;
+  await renderer.transition(subject, active.getAnimation, TransitionFilter);
+  await renderer.transition(subject, active.getAnimation, undefined);
+  active.finished.resolve();
+});
+
+test("late crop completion preserves a newer masked endpoint and releases only the obsolete crop", async () => {
+  const subject = token();
+  const dest = {...mask, src: "B.png"};
+  const delayed = Promise.withResolvers();
+  const obsolete = crop();
+  const latest = crop();
+  const renderer = new MaskRenderer(new Map([[dest.src, dest], [mask.src, mask]]),
+    (base, record) => record.src === dest.src ? delayed.promise : latest, () => ({}));
+  const first = nativeAnimation(subject, dest.src);
+  first.prepared.resolve();
+  const stale = renderer.transition(subject, first.getAnimation, TransitionFilter);
+  await new Promise(resolve => setImmediate(resolve));
+  const second = nativeAnimation(subject, mask.src);
+  second.prepared.resolve();
+  first.finished.resolve();
+  await renderer.transition(subject, second.getAnimation, TransitionFilter);
+  assert.equal(second.filter.uniforms.targetTexture, latest);
+  delayed.resolve(obsolete);
+  await stale;
+  assert.equal(obsolete.disposed, 1);
+  assert.equal(first.filter.uniforms.targetTexture.native, true);
+  assert.equal(second.filter.uniforms.targetTexture, latest);
+  const external = {};
+  second.filter.targetTexture = external;
+  renderer.clear();
+  assert.equal(second.filter.uniforms.targetTexture, external);
+  assert.equal(latest.disposed, 1);
+  second.finished.resolve();
+});
+
+test("a stale config image load requests a redraw against the current concrete selection", async () => {
+  const subject = token();
+  Object.assign(subject, {isPreview: true, previewType: "config"});
+  const selectedBase = {};
+  const renderer = new MaskRenderer(new Map(), crop, () => selectedBase);
+  let redraws = 0;
+  subject.renderFlags.set = flags => { assert.deepEqual(flags, {redraw: true}); redraws++; };
+  await renderer.apply(subject);
+  renderer.refreshPreview(subject);
+  renderer.refreshPreview(subject);
+  assert.equal(redraws, 1);
+  subject.texture = subject.mesh.texture = {baseTexture: selectedBase};
+  await renderer.apply(subject);
+  renderer.refreshPreview(subject);
+  assert.equal(redraws, 1);
+});
+
+test("a config ring toggle requests native redraw even on the same image path", async () => {
+  const subject = token();
+  Object.assign(subject, {isPreview: true, previewType: "config"});
+  const renderer = new MaskRenderer(new Map(), crop, () => subject.texture.baseTexture);
+  let redraws = 0;
+  subject.renderFlags.set = flags => { assert.deepEqual(flags, {redraw: true}); redraws++; };
+  await renderer.apply(subject);
+  subject.document.ring.enabled = true;
+  renderer.refreshPreview(subject);
+  assert.equal(redraws, 1);
+  await renderer.apply(subject);
+  subject.document.ring.enabled = false;
+  renderer.refreshPreview(subject);
+  assert.equal(redraws, 2);
+});
