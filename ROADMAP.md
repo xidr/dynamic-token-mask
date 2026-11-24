@@ -32,8 +32,17 @@ A GM can open a portrait in Foundry’s file picker and frame the subject for al
 - [x] Confirmed that missing PNGs, GIFs and unresolved wildcard paths disabled Save. Disabling the module and reloading restored both original portraits with the mask still saved. Re-enabling it restored both crops. [Picker release verification](knowledge/features/file-picker-mask-controls.md#first-ui-release)
 - [ ] Repeat the player-only browser reload. The client reached the canvas, but returning to the test scene timed out.
 
-## 5. Decide which rendering cases to support next
+## 5. Keep static portrait masks consistent across native Foundry token workflows
 
-- [ ] Test drag previews, scene-token and prototype-token configuration previews, and image-change transitions. Record which paths need additional renderer hooks.
-- [ ] Test dynamic rings with both implicit and explicit subject images. Decide which image owns the mask before adding ring support.
-- [ ] Prioritize animated portraits and third-party token or picker integrations using concrete use cases and repeatable fixtures. Give each selected integration its own acceptance check. [Open design questions](knowledge/topics/module/_overview.md)
+### Batch 1. Drag previews, token configuration previews and image transitions
+
+Check each workflow in the designated Foundry 14.369 test world and add renderer hooks where the observed behavior requires them.
+
+- [ ] Drag a masked token as the GM and as its owning player. The drag preview shows the placed token’s crop, and both dropping and cancelling preserve the correct portrait.
+- [ ] Switch images in scene-token and prototype-token configuration. Each preview shows the selected image with its own saved crop, if any. Cancelling preserves the original. Applying the change updates the scene token or, for a prototype, gives the next newly placed token the selected portrait.
+- [ ] Transition between two images with distinct masks, then to an unmasked image. Repeat with a second switch before the first transition finishes. Each image uses its own framing, and GM and player clients both finish on the last selected portrait.
+
+### Batch 2. Native dynamic rings
+
+- [ ] Apply the mask for the resolved ring subject image. With an implicit subject, use the token portrait’s mask. With an explicit subject, use that image’s own mask.
+- [ ] Verify both subject modes on GM and player clients. Include a masked token portrait paired with an unmasked explicit subject. The subject retains its original framing in that case, and the ring artwork stays intact in every case.
