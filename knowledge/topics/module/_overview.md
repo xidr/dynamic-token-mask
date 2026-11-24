@@ -9,7 +9,7 @@ source: Project setup conversation, 2026-10-22, and scripts/main.js, scripts/mas
 
 # Module overview
 
-Last verified: 2026-11-23 (picker adapter, automated tests and live Foundry 14.369 GM and player clients). The renderer and settings editor were checked in a Foundry 14.369 test world on 2026-11-23.
+Last verified on 2026-11-23 in a Foundry 14.369 test world with GM and player clients. The first UI release checks covered the picker edit lifecycle, resolved wildcard variants and native token rendering. [Picker release verification](../../features/file-picker-mask-controls.md#first-ui-release) · [Renderer verification](../../features/static-token-renderer.md#first-ui-release)
 
 **TL;DR:** Dynamic Token Mask stores a circle per image path and renders circular crops on ordinary static scene tokens. GMs manage masks through the API or the [Portrait Mask Editor](../../features/portrait-mask-editor.md), including through per-image buttons in the [built-in file picker](../../features/file-picker-mask-controls.md). Saving from the picker updated matching indicators in two open GM pickers and matching token textures on both clients. Foundry 14.369 testing confirmed shared crops and removal in GM and player sessions, with persistence across reconnects and browser reloads. The editor preview matched sampled token pixels for opaque and transparent PNG crops in both sessions. The editor refits its window when loading a portrait pushes the footer below the viewport. See [editor-actions-below-viewport](../../bugs/fixed/editor-actions-below-viewport.md).
 
@@ -23,7 +23,7 @@ Last verified: 2026-11-23 (picker adapter, automated tests and live Foundry 14.3
 
 ## Open design questions
 
-- How should the editor preview crops on nonuniformly scaled or rectangular tokens? It currently shows the square crop before Foundry applies token texture settings.
+- Should the editor offer a token-specific preview? The current square preview shows the crop before Foundry applies token fit and scale. On a rectangular footprint or with nonuniform scale, the circle can render as an ellipse.
 - How should masking interact with dynamic rings, image transitions and token configuration previews?
 - Which other token modules need explicit compatibility testing?
 

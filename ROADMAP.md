@@ -1,6 +1,6 @@
 # Dynamic Token Mask roadmap
 
-A GM can open a portrait in Foundry’s file picker and frame the subject for all ordinary static tokens using that image in the world. The next milestone is to verify the picker workflow in the designated Foundry world. Status reflects evidence through November 23, 2026.
+A GM can open a portrait in Foundry’s file picker and frame the subject for all ordinary static tokens using that image in the world. The first UI release was tested in the designated Foundry 14.369 world on November 23, 2026.
 
 ## 1. Store and render a mask — verified
 
@@ -23,12 +23,14 @@ A GM can open a portrait in Foundry’s file picker and frame the subject for al
 - [x] Exercise click hit-testing and mouse, Enter and Space activation in all four views in an offline Chromium fixture using Foundry 14.369 styles.
 - [x] Verified all four views, selection, submission, tile drag, PNG upload, keyboard focus return, navigation, search, saved indicators in two GM pickers, a detached picker and an encoded Cyrillic path with a space and uppercase extension. Both clients displayed token updates. The player account lacked file-browsing permission. [Picker live acceptance](knowledge/features/file-picker-mask-controls.md#live-acceptance)
 
-## 4. Verify the first UI release
+## 4. Verify the first UI release — live checks on Foundry 14.369
 
-- [ ] Repeat the two-client test through the file picker without console commands. Create, adjust, cancel, save and remove a mask. Check both tokens after a scene change and browser reload.
-- [ ] Check static images with transparency, resolved wildcard variants, and filenames with spaces or Unicode. Verify that editing one image leaves other images alone.
-- [ ] Check rotation, mirroring, rectangular footprints, nonuniform scale and fit. Document where the on-token result differs from the square editor preview. Verify targeting, vision and occlusion in a scene configured to exercise them.
-- [ ] Exercise missing images and unsupported resources. Disable the module in the designated test world and reload to confirm Foundry displays the originals. Record the tested Foundry build and supported cases in the README. [Validation guide](knowledge/how-to/develop-and-validate.md)
+- [x] Created, adjusted, cancelled, saved and removed a mask through the built-in picker. Both tokens showed the crop after scene navigation on both clients, a GM browser reload and a player rejoin. [Picker release verification](knowledge/features/file-picker-mask-controls.md#first-ui-release)
+- [x] Checked a transparent PNG with a space and Cyrillic characters in its filename. The native wildcard selector displayed the selected variant's own art and reapplied the mask when the masked variant was selected again. [Renderer verification](knowledge/features/static-token-renderer.md#first-ui-release)
+- [x] Compared the square preview with a rendered token and exercised rectangular footprints, fit, rotation, mirroring, texture scale, targeting and token vision. [Renderer verification](knowledge/features/static-token-renderer.md#first-ui-release)
+- [x] Verified overhead tile occlusion. Selecting the covered token faded the tile and revealed the crop. [Renderer verification](knowledge/features/static-token-renderer.md#first-ui-release)
+- [x] Confirmed that missing PNGs, GIFs and unresolved wildcard paths disabled Save. Disabling the module and reloading restored both original portraits with the mask still saved. Re-enabling it restored both crops. [Picker release verification](knowledge/features/file-picker-mask-controls.md#first-ui-release)
+- [ ] Repeat the player-only browser reload. The client reached the canvas, but returning to the test scene timed out.
 
 ## 5. Decide which rendering cases to support next
 
