@@ -36,11 +36,13 @@ A GM can open a portrait in Foundry’s file picker and frame the subject for al
 
 ### Batch 1. Drag previews, token configuration previews and image transitions
 
-Renderer and sheet integrations passed automated checks. The Foundry 14.369 baseline identified raw previews and incoming transition art. The checks below require runtime evidence from the changed build. [Baseline and implementation](knowledge/features/native-token-previews-and-transitions.md) · [Verification procedure](knowledge/how-to/verify-native-token-previews-and-transitions.md)
+Renderer and sheet integrations passed automated checks. Post-merge checks ran on Foundry 14.369. [Runtime results by role](knowledge/features/native-token-previews-and-transitions.md#foundry-14369-post-merge-verification) · [Verification procedure](knowledge/how-to/verify-native-token-previews-and-transitions.md)
 
-- [ ] Drag a masked token as the GM and as its owning player. The drag preview shows the placed token’s crop, and both dropping and cancelling preserve the correct portrait.
-- [ ] Switch images in scene-token and prototype-token configuration. Each preview shows the selected image with its own saved crop, if any. Cancelling preserves the original. Applying the change updates the scene token or, for a prototype, gives the next newly placed token the selected portrait.
-- [ ] Transition between two images with distinct masks, then to an unmasked image. Repeat with a second switch before the first transition finishes. Each image uses its own framing, and GM and player clients both finish on the last selected portrait.
+- [x] The GM and owning player both saw the placed token's crop in the held drag preview. Drop and cancel preserved the correct portrait for both roles.
+- [x] The GM verified scene-token and prototype previews with two masked images and an unmasked image. Cancel preserved the original portrait. Apply updated the scene token and the next token placed from the prototype. The owner could see the GM-placed tokens. Native permissions prevented the owner from opening configuration sheets or placing tokens.
+- [x] Both clients saw the correct outgoing and incoming art in completed native fades between two masked portraits and then to an unmasked portrait.
+- [x] Both clients displayed the requested final portrait after an interrupted fade and kept it after the first fade's scheduled end. This passed for masked and unmasked targets.
+- [x] Creating, replacing and removing a mask refreshed the held drag and placed token for both roles, and the GM's open scene and prototype previews.
 
 ### Batch 2. Native dynamic rings
 

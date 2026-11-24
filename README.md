@@ -14,7 +14,7 @@ In the built-in file picker, a ready-world GM can use the portrait icon beside a
 
 Masks apply to the exact resolved image. In the live checks, switching to an unrelated wildcard variant displayed its original art, and switching back displayed the crop. The editor shows a square crop. Foundry applies token fit, rotation, mirroring and texture scale to that square, so a stretched token can display the circle as an ellipse. [Renderer verification](knowledge/features/static-token-renderer.md#first-ui-release)
 
-The native token workflow batch covers held drag previews, scene-token configuration previews, prototype Appearance thumbnails and targets in recognized native image transitions. Automated checks passed. Foundry 14.369 runtime checks on the changed build are pending. [Native token previews and transitions](knowledge/features/native-token-previews-and-transitions.md)
+The native token workflow batch covers held drag previews, scene-token configuration previews, prototype Appearance thumbnails and targets in recognized native image transitions. In Foundry 14.369, held drag, drop and cancel passed for the GM and owning player. The GM verified scene-token and prototype Appearance previews, including Cancel and Apply. Both clients saw the expected portrait framing during completed native fades and the correct final portraits after interrupted fades. Mask creation, replacement and removal refreshed matching previews while they were open. The test owner's native permissions prevented opening the configuration sheets and placing tokens. [Native token previews and transitions](knowledge/features/native-token-previews-and-transitions.md)
 
 ## Development
 

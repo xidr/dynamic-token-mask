@@ -21,4 +21,4 @@ Waiting for the settled draw leaves raw incoming artwork visible during the blen
 
 ## Consequences
 
-Foundry controls the effect and timing. The identification logic depends on observed Foundry 14.369 behavior and should be revalidated after a Foundry upgrade. The changed-build browser checks remain pending. [Verification procedure](../how-to/verify-native-token-previews-and-transitions.md)
+Foundry controls the effect and timing. The identification logic depends on observed Foundry 14.369 behavior and should be revalidated after a Foundry upgrade. On Foundry 14.369, both clients showed the expected framing during completed fades and settled on the requested masked or unmasked portrait after interrupted fades. [Post-merge verification](../features/native-token-previews-and-transitions.md#foundry-14369-post-merge-verification)
