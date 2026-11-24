@@ -55,6 +55,8 @@ Hooks.on("updateToken", (doc, changed) => {
     .catch(error => console.warn("Dynamic Token Mask | Could not frame token transition.", error));
 });
 Hooks.on("refreshToken", token => renderer?.refreshPreview(token));
+Hooks.on("renderTokenConfig", (sheet, element) => renderer?.watchConfig(sheet, element));
+Hooks.on("closeTokenConfig", sheet => renderer?.closeConfig(sheet));
 Hooks.on("renderPrototypeTokenConfig", (sheet, element) => prototypePreview?.render(sheet, element));
 Hooks.on("closePrototypeTokenConfig", sheet => prototypePreview?.close(sheet));
 Hooks.on("renderFilePicker", (picker, element) => pickerMasks?.render(picker, element));

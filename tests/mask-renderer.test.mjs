@@ -783,3 +783,74 @@ test("border follows the clipped outer path with constant perpendicular inset in
     }
   }
 });
+
+test("rapid scene-sheet portrait changes queue a final draw even if C is still loading on return to A", async () => {
+  const a = {id: "A"};
+  const c = {id: "C"};
+  const placed = token(a);
+  const preview = Object.assign(token(a), {isPreview: true, previewType: "config"});
+  const renderer = new MaskRenderer(new Map([[mask.src, mask]]), base => base === a ? crop() : null, () => a);
+  const root = Object.assign(new EventTarget(), {name: "texture.src"});
+  const sheet = {document: placed.document, token: preview.document};
+  preview.document.object = preview;
+  placed.document.object = placed;
+  preview.document.rendered = true;
+  renderer.watchConfig(sheet, root);
+  function change(src) {
+    preview.document.texture.src = root.value = src;
+    root.dispatchEvent(new Event("change"));
+  }
+
+  const loading = Promise.withResolvers();
+  let drawing = loading.promise.then(async () => {
+    preview.mesh.texture = preview.texture = {baseTexture: c};
+    await renderer.apply(preview);
+  });
+  let draws = 0;
+  preview.draw = () => {
+    draws++;
+    return drawing = drawing.then(async () => {
+      preview.mesh.texture = preview.texture = {baseTexture: a};
+      await renderer.apply(preview);
+    });
+  };
+
+  change("portraits/B.png");
+  change("portraits/C.png");
+  change(mask.src);
+  change(mask.src);
+  await Promise.resolve();
+  loading.resolve();
+  await drawing;
+  assert.equal(preview.texture.baseTexture, a);
+  assert.equal(draws, 1);
+  assert.notEqual(preview.mesh.texture, preview.texture);
+  assert.equal(placed.mesh.texture, placed.texture);
+
+  change("portraits/C.png");
+  preview.mesh.texture = preview.texture = {baseTexture: c};
+  change(mask.src);
+  await Promise.resolve();
+  await drawing;
+  assert.equal(draws, 2);
+  assert.equal(preview.texture.baseTexture, a);
+  assert.notEqual(preview.mesh.texture, preview.texture);
+
+  change("portraits/C.png");
+  change(mask.src);
+  change("portraits/B.png");
+  await Promise.resolve();
+  assert.equal(draws, 2);
+
+  preview.document.ring.enabled = true;
+  change(mask.src);
+  await Promise.resolve();
+  assert.equal(draws, 2);
+
+  preview.document.ring.enabled = false;
+  change("portraits/C.png");
+  change(mask.src);
+  renderer.closeConfig(sheet);
+  await Promise.resolve();
+  assert.equal(draws, 2);
+});

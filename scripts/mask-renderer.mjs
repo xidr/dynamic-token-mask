@@ -74,6 +74,7 @@ export class MaskRenderer {
   #transitions = new Map();
   #chains = new WeakSet();
   #previewSources = new Map();
+  #configSheets = new Map();
   #drawnRings = new WeakMap();
   // Foundry can supply distinct texture wrappers around one shared image.
   #byBase = new WeakMap();
@@ -179,6 +180,41 @@ export class MaskRenderer {
     }
     mesh.texture = entry.texture;
     token.renderFlags.set({refreshMesh: true});
+  }
+
+  watchConfig(sheet, root) {
+    if (this.#configSheets.get(sheet)?.root === root) return;
+    this.closeConfig(sheet);
+    const state = {root, src: sheet.token.texture.src, queued: false};
+    state.onChange = event => {
+      if (event.target.name !== "texture.src") return;
+      const src = event.target.value;
+      if (src === state.src) return;
+      state.src = src;
+      if (src !== sheet.document.texture.src || state.queued) return;
+      state.queued = true;
+      queueMicrotask(() => {
+        state.queued = false;
+        if (this.#configSheets.get(sheet) !== state || state.src !== src || !sheet.token.rendered) return;
+        const preview = sheet.token.object;
+        if (sheet.token === sheet.document || preview?.previewType !== "config" || preview.destroyed || sheet.token.ring?.enabled
+          || sheet.token.texture.src !== src || sheet.document.texture.src !== src || !src || src.includes("*")) return;
+        const base = sheet.document.object?.texture?.baseTexture;
+        if (!base || base !== this.#getBase(src) || base.resource?.source?.tagName === "VIDEO") return;
+        // TokenConfig compares against the original document and can skip this last draw.
+        // A previous native draw may still install its texture even if the original art is visible now.
+        preview.draw().catch(error => console.warn("Dynamic Token Mask | Could not redraw scene preview.", error));
+      });
+    };
+    this.#configSheets.set(sheet, state);
+    root.addEventListener("change", state.onChange);
+  }
+
+  closeConfig(sheet) {
+    const state = this.#configSheets.get(sheet);
+    if (!state) return;
+    state.root.removeEventListener("change", state.onChange);
+    this.#configSheets.delete(sheet);
   }
 
   // TokenConfig and remote updates to held drags can change art through refresh alone.
@@ -299,6 +335,7 @@ export class MaskRenderer {
   }
 
   clear() {
+    for (const sheet of this.#configSheets.keys()) this.closeConfig(sheet);
     this.#drawnRings = new WeakMap();
     this.#previewSources.clear();
     this.#chains = new WeakSet();
