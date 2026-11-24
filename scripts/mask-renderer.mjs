@@ -43,7 +43,7 @@ export class MaskRenderer {
   #tokens = new Map();
   #transitions = new Map();
   #chains = new WeakSet();
-  #previewSources = new WeakMap();
+  #previewSources = new Map();
   // Foundry can supply distinct texture wrappers around one shared image.
   #byBase = new WeakMap();
 
@@ -71,14 +71,27 @@ export class MaskRenderer {
     return entry;
   }
 
-  async apply(token) {
-    this.release(token);
-    if (token.previewType === "config") {
+  apply(token) {
+    // Track drawn previews even when the selected portrait has no mask yet.
+    if (!token.destroyed && ["config", "dragging"].includes(token.previewType)) {
       const state = this.#previewSources.get(token) ?? {};
       state.drawn = token.document.texture.src;
       state.ring = !!token.document.ring?.enabled;
       this.#previewSources.set(token, state);
     }
+    return this.#applyMask(token);
+  }
+
+  async update(paths, placeables) {
+    const pending = [];
+    for (const token of new Set([...placeables, ...this.#previewSources.keys()])) {
+      if (paths.includes(token.document.texture.src)) pending.push(this.#applyMask(token));
+    }
+    await Promise.all(pending);
+  }
+
+  async #applyMask(token) {
+    this.#releaseCrop(token);
     if (!eligible(token) || token.mesh.texture !== token.texture) return;
     const src = token.document.texture.src;
     if (!src?.trim() || src.includes("*")) return;
@@ -92,7 +105,7 @@ export class MaskRenderer {
     if (this.#tokens.get(token) !== state) return;
     if (!entry.texture || !eligible(token) || token.document.texture.src !== src
       || token.mesh !== mesh || token.texture !== original || mesh.texture !== original) {
-      this.release(token);
+      this.#releaseCrop(token);
       return;
     }
     mesh.texture = entry.texture;
@@ -121,6 +134,11 @@ export class MaskRenderer {
   }
 
   release(token, refresh = true) {
+    this.#previewSources.delete(token);
+    this.#releaseCrop(token, refresh);
+  }
+
+  #releaseCrop(token, refresh = true) {
     const state = this.#tokens.get(token);
     if (!state) return;
     this.#tokens.delete(token);
@@ -206,6 +224,7 @@ export class MaskRenderer {
   }
 
   clear() {
+    this.#previewSources.clear();
     this.#chains = new WeakSet();
     for (const context of this.#transitions.keys()) this.#releaseTarget(context);
     for (const token of this.#tokens.keys()) this.release(token, false);

@@ -2,6 +2,21 @@ import {drawCrop} from "./mask-renderer.mjs";
 
 const THUMBNAIL = '[data-tab="appearance"] .token-image-preview img.token-image-thumb';
 
+async function decodeCropSource(image, src) {
+  const doc = image.ownerDocument;
+  const url = new URL(src, doc.baseURI);
+  if (url.origin === doc.location.origin) {
+    await image.decode();
+    return image;
+  }
+  // Foundry's displayed thumbnail loads without crossorigin. Request a readable copy.
+  const source = doc.createElement("img");
+  source.crossOrigin = "anonymous";
+  source.src = url.href;
+  await Promise.all([source.decode(), image.decode()]);
+  return source;
+}
+
 function thumbnailContent(image, mask) {
   const surface = image.ownerDocument.createElement("canvas");
   drawCrop(surface, image, mask, 256);
@@ -37,12 +52,13 @@ export class PrototypeMaskPreview {
     try {
       const mask = this.#masks.get(src);
       if (!mask) return;
-      await image.decode();
+      const source = await decodeCropSource(image, src);
       if (this.#sheets.get(sheet) !== state || sheet.token.ring?.enabled
         || root.querySelector(THUMBNAIL) !== image || image.getAttribute("src") !== src
-        || image.naturalWidth !== mask.imageWidth || image.naturalHeight !== mask.imageHeight) return;
+        || image.naturalWidth !== mask.imageWidth || image.naturalHeight !== mask.imageHeight
+        || source.naturalWidth !== mask.imageWidth || source.naturalHeight !== mask.imageHeight) return;
       state.previous = image.style.content;
-      image.style.content = this.#content(image, mask);
+      image.style.content = this.#content(source, mask);
       state.applied = image.style.content;
     } catch (error) {
       if (this.#sheets.get(sheet) === state) console.warn("Dynamic Token Mask | Could not crop prototype thumbnail.", error);

@@ -59,9 +59,8 @@ Hooks.on("closeFilePicker", picker => pickerMasks?.close(picker));
 Hooks.on(CHANGE_HOOK, paths => {
   pickerMasks?.update(paths);
   prototypePreview?.update(paths);
-  for (const token of globalThis.canvas?.tokens?.placeables ?? []) {
-    if (paths.includes(token.document.texture.src)) applyMask(token);
-  }
+  renderer?.update(paths, globalThis.canvas?.tokens?.placeables ?? [])
+    .catch(error => console.warn("Dynamic Token Mask | Could not update token masks.", error));
 });
 Hooks.on("destroyToken", token => renderer?.release(token, false));
 Hooks.on("canvasTearDown", () => renderer?.clear());

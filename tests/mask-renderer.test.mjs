@@ -326,3 +326,44 @@ test("a config ring toggle requests native redraw even on the same image path", 
   renderer.refreshPreview(subject);
   assert.equal(redraws, 2);
 });
+
+test("setting changes refresh live previews from their first mask through replacement and removal", async () => {
+  const masks = new Map();
+  const renderer = new MaskRenderer(masks, crop);
+  const placed = token();
+  const drag = Object.assign(token(placed.texture.baseTexture), {isPreview: true, previewType: "dragging"});
+  const config = Object.assign(token(), {isPreview: true, previewType: "config"});
+  const unrelated = Object.assign(token(), {isPreview: true, previewType: "config"});
+  unrelated.document.texture.src = "other.png";
+  const closed = Object.assign(token(), {isPreview: true, previewType: "config"});
+  for (const t of [placed, drag, config, unrelated, closed]) await renderer.apply(t);
+  renderer.release(closed, false);
+  masks.set(mask.src, mask);
+  masks.set("other.png", {...mask, src: "other.png"});
+  await renderer.update([mask.src], [placed]);
+  const shared = placed.mesh.texture;
+  assert.notEqual(shared, placed.texture);
+  assert.equal(drag.mesh.texture, shared);
+  const firstConfig = config.mesh.texture;
+  assert.notEqual(firstConfig, config.texture);
+  assert.equal(closed.mesh.texture, closed.texture);
+  assert.equal(unrelated.mesh.texture, unrelated.texture);
+
+  masks.set(mask.src, {...mask, radius: 0.1});
+  await renderer.update([mask.src], [placed]);
+  assert.equal(shared.disposed, 1);
+  assert.equal(firstConfig.disposed, 1);
+  const replacement = drag.mesh.texture;
+  assert.equal(replacement, placed.mesh.texture);
+  assert.notEqual(replacement, shared);
+  assert.notEqual(config.mesh.texture, config.texture);
+
+  masks.delete(mask.src);
+  await renderer.update([mask.src], [placed]);
+  for (const t of [placed, drag, config]) assert.equal(t.mesh.texture, t.texture);
+  assert.equal(replacement.disposed, 1);
+  renderer.clear();
+  masks.set(mask.src, mask);
+  await renderer.update([mask.src], []);
+  for (const t of [drag, config]) assert.equal(t.mesh.texture, t.texture);
+});

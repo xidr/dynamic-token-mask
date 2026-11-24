@@ -9,7 +9,8 @@ function sheetRoot(getImage) {
 }
 
 function thumbnail(src, decode = async () => {}) {
-  return {getAttribute: () => src, style: {content: ""}, naturalWidth: 256, naturalHeight: 128, decode};
+  const ownerDocument = {baseURI: "https://game.example/play", location: {origin: "https://game.example"}};
+  return {getAttribute: () => src, ownerDocument, style: {content: ""}, naturalWidth: 256, naturalHeight: 128, decode};
 }
 
 test("use the concrete displayed image and preserve the native thumbnail and controls", async () => {
@@ -72,4 +73,29 @@ test("dimensions, concrete source and current stylesheet ownership gate thumbnai
   image.style.content = "url(other)";
   preview.close(sheet);
   assert.equal(image.style.content, "url(other)");
+});
+
+test("external portraits use a CORS-readable image while preserving the native thumbnail", async () => {
+  const src = "https://assets.example/faces/B.png";
+  const image = thumbnail(src);
+  const root = sheetRoot(() => image);
+  const sheet = {token: {}};
+  const source = thumbnail(src);
+  let requested;
+  Object.defineProperty(source, "src", {set(url) { requested = [url, this.crossOrigin]; }});
+  image.ownerDocument = {
+    baseURI: "https://game.example/play",
+    location: {origin: "https://game.example"},
+    createElement(tag) { assert.equal(tag, "img"); return source; }
+  };
+  const preview = new PrototypeMaskPreview(new Map([[src, {...mask, src}]]), decoded => {
+    assert.equal(decoded, source);
+    return "url(cropped)";
+  });
+  await preview.render(sheet, root);
+  assert.deepEqual(requested, [src, "anonymous"]);
+  assert.equal(image.style.content, "url(cropped)");
+  assert.equal(image.crossOrigin, undefined);
+  preview.close(sheet);
+  assert.equal(image.style.content, "");
 });
