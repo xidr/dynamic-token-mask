@@ -39,7 +39,7 @@ On 2026-11-24, all six steps ran in isolated GM and owning-player sessions on Fo
 
 HTML snapshots, rendered screenshots and diagnostic traces were kept outside Foundry Data. The evidence includes `editor-frame-checks.json`, `editor-conflicts.json`, `reload-and-removal.json`, `rapid-diagnostic2.json`, intermediate screenshots and `midframes.json`, `ring-pulse.json` and `cleanup.json`. Cleanup removed disposable scene and actor fixtures, restored fixture settings and confirmed the temporary mask records were gone in both sessions.
 
-The [scene preview repair](../bugs/fixed/stale-scene-token-preview.md) passed automated checks and awaits a live rerun. An external CORS-enabled portrait was unavailable for the prototype thumbnail check. See the [roadmap](../../ROADMAP.md) for follow-up.
+The [scene preview repair](../bugs/fixed/stale-scene-token-preview.md) passed automated checks and a live rerun at `32a07d9`, including rapid and whitespace-padded returns and placed crop checks after Cancel and Apply. An external CORS-enabled portrait was unavailable for the prototype thumbnail check. See the [roadmap](../../ROADMAP.md) for follow-up.
 
 ## If it goes wrong
 

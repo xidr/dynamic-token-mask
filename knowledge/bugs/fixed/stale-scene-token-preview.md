@@ -4,12 +4,12 @@ created: 2026-11-24
 updated: 2026-11-24
 tags: [foundry, rendering]
 status: fixed
-source: Foundry 14.369 shape checks at d7e85f4 and task repair at f41382b
+source: Foundry 14.369 shape checks at d7e85f4 and task repair at f41382b, and live repair verification at 32a07d9
 ---
 
 # Stale scene-token preview after returning to the original portrait
 
-**TL;DR:** On Foundry 14.369, the GM's ordinary scene-token preview could keep showing another image after selection returned to the token's original portrait. The repair schedules a native draw for the return and passed the Node regression. A live rerun is pending.
+**TL;DR:** On Foundry 14.369, the GM's ordinary scene-token preview could keep showing another image after selection returned to the token's original portrait. The repair schedules a native draw for the return and passed the Node regression. The GM confirmed the repair in Foundry, and both roles saw the expected placed crops after Cancel and Apply.
 
 ## Symptom
 
@@ -31,4 +31,8 @@ A refresh that checks the currently loaded texture can see the expected A textur
 
 The scene-sheet listener reads Foundry's prepared preview path after the native form handler, coalesces duplicate changes and schedules the final native draw for an eligible static preview. It checks that the sheet is still open and the selection still matches before drawing. The test in `tests/mask-renderer.test.mjs` covers the pending C draw, a return after C is installed, whitespace in the raw field value, repeated input, a subsequent selection, ring exclusion and sheet closure. All 78 Node tests and independent review passed at `f41382b`.
 
-After the repair is merged, rerun the rapid sequence as GM. Confirm the A crop, then check Cancel, Apply and the owning player's view of the placed token. See the [native preview procedure](../../how-to/verify-native-token-previews-and-transitions.md).
+## Foundry 14.369 post-merge verification
+
+On 2026-11-24 at module revision `32a07d9`, the GM used an ordinary scene token with rings disabled. Rapid A → B → C → A and a return with surrounding whitespace in the field both restored A's cached base texture and displayed the derived 128×128 crop without a manual draw. Cancel preserved A and its 128×128 crop for the GM and owning player. Apply displayed B and its derived 94×94 crop on both clients.
+
+The run retained `rapid.json`, `padded.json`, `apply.json`, HTML control snapshots and canvas screenshots outside Foundry Data. Cleanup removed the temporary masks and fixtures and confirmed that both sessions returned to their original scenes. See the [native preview procedure](../../how-to/verify-native-token-previews-and-transitions.md).

@@ -57,11 +57,13 @@ Renderer and sheet integrations passed automated checks. Post-merge checks ran o
 - [x] As GM, verified all four editor shapes, framing, reset, Cancel, reopen, stale Save and Remove, and shape-only edits in open previews. The ordinary scene sheet could display stale art after rapidly returning to the original portrait. The prototype passed the rapid sequence. [Shape results](knowledge/how-to/verify-mask-shapes.md#check-it-worked)
 - [x] Both roles verified placed crop updates, reload, removal, held drags, native fades and implicit and explicit ring subjects, including a rectangular subject frame. Foundry permissions blocked the owning player from opening configuration sheets or placing tokens. [Shape results by role](knowledge/how-to/verify-mask-shapes.md#check-it-worked)
 - [x] Repaired the scene preview's return to the original portrait. The regression test and full suite passed, and independent review accepted the fix. [Bug record](knowledge/bugs/fixed/stale-scene-token-preview.md)
-- [ ] After merging the repair, rerun the rapid sequence on the live GM sheet and verify Cancel, Apply and the owning player's placed token. The external CORS thumbnail case also awaits a suitable fixture. [Verification procedure](knowledge/how-to/verify-native-token-previews-and-transitions.md)
+- [x] Reran the rapid and whitespace-padded returns on the live GM sheet. Both roles confirmed the placed crops after Cancel and Apply. [Post-merge preview repair results](knowledge/bugs/fixed/stale-scene-token-preview.md#foundry-14369-post-merge-verification)
+- [ ] The external CORS thumbnail case awaits a suitable fixture. [Shape verification procedure](knowledge/how-to/verify-mask-shapes.md)
 
 ## 7. Add optional colored borders to masks
 
 - [x] Add a toggle, color picker and width slider for all four shapes. Keep the border inside the existing outline and remember custom preferences when it is turned off. [Colored mask borders](knowledge/features/colored-mask-borders.md)
 - [x] Read existing mask records and upgrade to schema 3 on the first successful save with non-default border settings. [Storage contract](knowledge/reference/mask-storage.md)
-- [ ] As GM, check the controls, fractional width, preview, border-only saves, Cancel, reopening, removal and sheet previews.
-- [ ] As GM and owning player, check the placed crops, live changes, reload, held drags, native fades and implicit and explicit ring subjects, including a rectangular subject frame. [Verification procedure](knowledge/how-to/verify-mask-borders.md)
+- [x] The GM exercised the controls for all four shapes, fractional width on reopen, border-only saves, Cancel, stale editor conflicts, removal and both native sheet previews. At 1400×950, moving the wide editor window made the full footer visible.
+- [x] Both roles observed placed border updates, browser reload persistence, removal, held drags, native fade outcomes and implicit and explicit ring subjects, including a rectangular subject frame.
+- [x] Both roles passed the placed-crop checks with borders off, at 0.5% and at 10% for all four shapes. All 12 crops matched fresh-canvas references pixel for pixel. Repeated canvas reads reproduced the discrepancies seen in the draft editor captures. [Border results by role](knowledge/how-to/verify-mask-borders.md#check-it-worked)

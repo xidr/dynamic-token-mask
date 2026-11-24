@@ -26,7 +26,7 @@ Use a designated test world once the changed build is served after an approved m
 
 ## Check it worked
 
-Record build, role, scenario and observed result. Capture HTML snapshots for configuration controls and rendered screenshots for thumbnails, held drags and intermediate and final canvas frames. Associate each pending role or scenario with its missing evidence. Update the [feature record](../features/native-token-previews-and-transitions.md) and [roadmap](../../ROADMAP.md) from the observations. See the [post-merge results](../features/native-token-previews-and-transitions.md#foundry-14369-post-merge-verification) for verified cases and permission limits. See the [scene preview repair](../bugs/fixed/stale-scene-token-preview.md) for the later reproduction and pending live rerun.
+Record build, role, scenario and observed result. Capture HTML snapshots for configuration controls and rendered screenshots for thumbnails, held drags and intermediate and final canvas frames. Associate each pending role or scenario with its missing evidence. Update the [feature record](../features/native-token-previews-and-transitions.md) and [roadmap](../../ROADMAP.md) from the observations. See the [post-merge results](../features/native-token-previews-and-transitions.md#foundry-14369-post-merge-verification) for verified cases and permission limits. See the [scene preview repair](../bugs/fixed/stale-scene-token-preview.md) for the later reproduction and completed live rerun.
 
 ## If it goes wrong
 
