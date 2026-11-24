@@ -36,9 +36,9 @@ Use the designated test world for a baseline on the existing build, then repeat 
 
 ## Check it worked
 
-While the owning player holds a token, have the GM switch the explicit subject from masked B to unmasked C and toggle the ring. Check the held clone after each change and again after drop or cancel.
+While the owning player holds a token, have the GM switch the explicit subject from masked B to unmasked C and toggle the ring. Observe the placed token, held clone and drag state after each change. Foundry 14.369 cancels active gestures when it redraws the original. If the clone disappears, verify the settled token and start a fresh drag. Test ordinary drop and cancel separately.
 
-TODO: unverified on the changed build. Record the date, Foundry build, module revision, role, expected framing, observed result and evidence. Capture HTML snapshots for sheet controls and rendered screenshots for placement, previews, drags and settled transitions. Record unavailable role actions separately. Update the [feature record](../features/native-dynamic-rings.md) and [roadmap](../../ROADMAP.md) from the observations.
+The [changed-build verification](../features/native-dynamic-rings.md#changed-build-live-verification) records the results for revision `cabdfef`. For subsequent runs, record the date, Foundry build, module revision, role, expected framing, observed result and evidence. Capture HTML snapshots for sheet controls and rendered screenshots for placement, previews, drags and settled transitions. Record unavailable role actions separately. Update the [feature record](../features/native-dynamic-rings.md) and [roadmap](../../ROADMAP.md) from the observations.
 
 ## If it goes wrong
 

@@ -58,4 +58,20 @@ The baseline run verified removal of the temporary scene, actor, masks and brows
 
 ## Changed-build live verification
 
-Pending on both the GM and owning-player clients. [Verification procedure](../how-to/verify-native-dynamic-rings.md)
+On module revision `cabdfef`, the GM and owning player compared the seven baseline cases in isolated Foundry 14.369 sessions in the designated test world. Both also checked a 2×1 token using cover fit. Each masked subject matched the expected crop pixel for pixel. The mapped implicit portrait used A's pixels in the 512 × 512 inferred frame. Unmasked C retained its inferred art. Rectangular B kept the baseline mesh dimensions and padding. Both clients showed the native shader, colors and pulse. Pixel values along the exposed ring changed between successive screenshots on each client.
+
+| Action | GM and owning-player observations |
+| --- | --- |
+| Switch subjects and toggle the ring on a placed token | Subject-only changes, entering the same inferred path explicitly, and rapid switches settled on the selected subject. Turning the ring off restored the ordinary portrait crop. |
+| Replace, remove and recreate the explicit B mask during a drag | The placed token and held clone on each client matched the replacement and recreated crops. Removing the mask restored native B. |
+| Replace, remove and recreate the implicit A mask during a drag | Both clients updated the placed token and held clone on each edit. Each role also checked drop and cancel. |
+| Create and remove the first mask for explicit C during a drag | All four placed and held objects displayed the expected C crop on creation, then restored the native 512 × 512 C texture on removal. |
+| GM changes the subject while the owner holds a drag | After the stored subject changed from B to C, the owner briefly saw the old B texture on both original and clone. Foundry canceled the gesture on redraw. The settled original displayed native C and retained its position. |
+| GM toggles the ring off during a separate owner drag | Foundry canceled the drag. Both clients displayed the ordinary 144 × 144 A crop, and a fresh owner drag displayed it too. Re-enabling the ring restored cropped B on both. |
+| Edit a scene token in its configuration sheet | The GM preview followed masked B, unmasked C and rapid B/C/B changes. Cancel retained implicit A on both clients. Apply displayed B on both clients. The owner lacked native token configuration permission. |
+| Edit a prototype and place a fresh token | The GM saw the original portrait in the ring-enabled thumbnail and the ordinary crop with the ring off. After Cancel, a fresh token displayed implicit A. After Apply, a fresh token displayed cropped B. Both clients checked placement. The owner lacked native token creation permission. |
+| Complete and interrupt a native subject transition | Both clients displayed an active native transition filter during the completed and interrupted fades. Each settled on the correct 290 × 70 B crop with zero remaining filters or animation contexts, including after the superseded effect would have ended. |
+
+Both sessions returned to their original scene. The temporary actor, scene, ten tokens, masks and session-local mappings were removed. Neither console recorded a warning or error attributed to the module. HTML snapshots, paired screenshots and measurements were retained outside Foundry Data.
+
+[Verification procedure](../how-to/verify-native-dynamic-rings.md)

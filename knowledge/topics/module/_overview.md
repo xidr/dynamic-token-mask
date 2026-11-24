@@ -9,7 +9,7 @@ source: Project setup conversation, 2026-10-22, and scripts/main.js, scripts/mas
 
 # Module overview
 
-Last verified in code on 2026-11-24 against the native ring renderer. Changed-build ring checks are pending in Foundry 14.369. [Native dynamic rings](../../features/native-dynamic-rings.md)
+Last verified on 2026-11-24 against the native ring renderer at `cabdfef` in separate Foundry 14.369 GM and owning-player sessions. [Native dynamic rings](../../features/native-dynamic-rings.md)
 
 On 2026-11-24, the GM and owning player tested the preceding native token workflow batch on Foundry 14.369. The native token workflow checks covered drags for both roles and configuration previews for the GM. Both clients showed the expected art during completed native fades and settled on the requested portraits after interrupted fades. [Runtime results by role](../../features/native-token-previews-and-transitions.md#foundry-14369-post-merge-verification) The first UI release was verified on 2026-11-23 in a Foundry 14.369 test world with GM and player clients. [Picker release verification](../../features/file-picker-mask-controls.md#first-ui-release) · [Renderer verification](../../features/static-token-renderer.md#first-ui-release)
 
