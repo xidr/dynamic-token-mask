@@ -28,6 +28,11 @@ const outlines = {
   "hex-pointy": [[0, -1], [apothem, -0.5], [apothem, 0.5], [0, 1], [-apothem, 0.5], [-apothem, -0.5]]
 };
 
+/** Horizontal extent through the center, in units of the sampling frame's half-size. */
+export function maskRightExtent(shape) {
+  return shape === "circle" ? 1 : Math.max(...outlines[shape].map(([x]) => x));
+}
+
 /** Append an outline in canvas coordinates, allowing independent display scales for each axis. */
 export function traceMaskPath(context, shape = "circle", x, y, radiusX, radiusY = radiusX) {
   if (shape === "circle") {

@@ -1,4 +1,7 @@
-import {constrainCircle, isSupportedStaticImage, resolveImageURL, toCircle, toRecord} from "./mask-geometry.mjs";
+import {
+  MASK_SHAPES, constrainCircle, containsMaskPoint, isSupportedStaticImage, maskRightExtent,
+  resolveImageURL, toCircle, toRecord, traceMaskPath
+} from "./mask-geometry.mjs";
 import {drawCrop} from "./mask-renderer.mjs";
 import {MaskConflictError, MODULE_ID} from "./mask-store.mjs";
 
@@ -6,6 +9,7 @@ const {ApplicationV2, HandlebarsApplicationMixin} = foundry.applications.api;
 const localize = key => game.i18n.localize("DTM." + key);
 const canEditMasks = () => game.ready && game.user?.isGM === true;
 const NUMBER_FIELDS = ["centerX", "centerY", "radius", "radiusSlider"];
+const sameFrame = (a, b) => a.x === b.x && a.y === b.y && a.radius === b.radius;
 
 export async function openMaskEditor(src = "", {opener} = {}) {
   const editor = new MaskEditor({src, opener});
@@ -34,8 +38,8 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
 
   #image = null;
   #src;
-  #circle;
-  #originalCircle;
+  #mask;
+  #originalMask;
   #drag;
   #request = null;
   #snapshot = null;
@@ -57,7 +61,8 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   get #busy() { return this.#closing || this.#writing || !!this.#request; }
 
   get #minimumRadius() {
-    return Math.min(0.001, this.#snapshot?.radius ?? 0.001) * Math.min(this.#image.width, this.#image.height);
+    const shorterSide = Math.min(this.#image.width, this.#image.height);
+    return Math.min(shorterSide * 0.001, shorterSide * (this.#snapshot?.radius ?? 0.001), this.#mask.radius);
   }
 
   _canRender() {
@@ -65,7 +70,11 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   async _prepareContext(options) {
-    return {...await super._prepareContext(options), src: this.#view?.source.value ?? this.#src};
+    return {
+      ...await super._prepareContext(options),
+      src: this.#view?.source.value ?? this.#src,
+      sizeDescriptionId: this.id + "-mask-size-help"
+    };
   }
 
   _onRender(context, options) {
@@ -79,6 +88,7 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     const inputs = Object.fromEntries(NUMBER_FIELDS.map(name => [name, body.querySelector('[name="' + name + '"]')]));
     this.#view = {
       body, source, canvas, inputs,
+      shape: body.querySelector('[name="shape"]'),
       workspace: body.querySelector(".mask-workspace"),
       currentSource: body.querySelector(".mask-current-source"),
       preview: body.querySelector(".mask-preview"),
@@ -101,6 +111,7 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
         if (this.#drag?.pointerId === event.pointerId) this.#drag = null;
       });
     }
+    this.#view.shape.addEventListener("change", event => this.#selectShape(event.currentTarget.value));
     for (const input of Object.values(inputs)) {
       input.addEventListener("input", () => this.#numeric(input));
       input.addEventListener("blur", () => this.#syncValues());
@@ -124,9 +135,10 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   #syncControls() {
-    const {body, source, inputs} = this.#view;
+    const {body, source, inputs, shape} = this.#view;
     const busy = this.#busy;
     source.disabled = busy;
+    shape.disabled = busy || !this.#image;
     for (const input of Object.values(inputs)) input.disabled = busy;
     body.querySelector('[data-action="load"]').disabled = busy;
     body.querySelector('[data-action="cancel"]').disabled = this.#writing || this.#closing;
@@ -176,14 +188,14 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
         this.#status("ReadFailed", true);
         return;
       }
-      const circle = toCircle(record, image.width, image.height);
+      const mask = {...toCircle(record, image.width, image.height), shape: record?.shape ?? "circle"};
       const dimensionsChanged = record && (record.imageWidth !== image.width || record.imageHeight !== image.height);
       this.#image?.close();
       this.#image = image;
       image = null;
       this.#src = src;
       this.#snapshot = record;
-      this.#circle = this.#originalCircle = circle;
+      this.#mask = this.#originalMask = mask;
       this.#showImage();
       this.#status(dimensionsChanged ? "DimensionsChanged" : "Ready");
     } catch (error) {
@@ -213,7 +225,7 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
 
   #paint(activeInput) {
     const {width, height} = this.#image;
-    const {x, y, radius} = this.#circle;
+    const {x, y, radius, shape} = this.#mask;
     const {canvas, preview} = this.#view;
     const ctx = canvas.getContext("2d");
     const sx = canvas.width / width;
@@ -223,31 +235,32 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     ctx.drawImage(this.#image, 0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.ellipse(x * sx, y * sy, radius * sx, radius * sy, 0, 0, 2 * Math.PI);
+    traceMaskPath(ctx, shape, x * sx, y * sy, radius * sx, radius * sy);
     ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
     ctx.fill("evenodd");
     ctx.beginPath();
-    ctx.ellipse(x * sx, y * sy, radius * sx, radius * sy, 0, 0, 2 * Math.PI);
+    traceMaskPath(ctx, shape, x * sx, y * sy, radius * sx, radius * sy);
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 2;
     ctx.stroke();
-    for (const px of [x, x + radius]) {
+    for (const px of [x, x + radius * maskRightExtent(shape)]) {
       ctx.beginPath();
       ctx.arc(px * sx, y * sy, 5, 0, 2 * Math.PI);
       ctx.fillStyle = "#ffbf47";
       ctx.fill();
     }
 
-    drawCrop(preview, this.#image, toRecord(this.#src, this.#circle, width, height), 256);
+    drawCrop(preview, this.#image, this.#draftRecord(), 256);
     this.#syncValues(activeInput);
   }
 
   #syncValues(activeInput) {
     if (!this.#image) return;
     const {width, height} = this.#image;
-    const {x, y, radius} = this.#circle;
+    const {x, y, radius, shape} = this.#mask;
     const radiusPercent = 100 * (radius / Math.min(width, height));
-    const {inputs} = this.#view;
+    const {inputs, shape: selector} = this.#view;
+    selector.value = shape;
     const minimumPercent = 100 * (this.#minimumRadius / Math.min(width, height));
     inputs.radius.min = inputs.radiusSlider.min = minimumPercent;
     const values = {centerX: 100 * (x / width), centerY: 100 * (y / height),
@@ -266,18 +279,19 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   #startDrag(event) {
     if (this.#busy || !this.#image || this.#drag || event.button !== 0) return;
     const point = this.#point(event);
-    const {x, y, radius} = this.#circle;
+    const {x, y, radius, shape} = this.#mask;
     const {width, height} = event.currentTarget.getBoundingClientRect();
     const scaleX = width / this.#image.width;
     const scaleY = height / this.#image.height;
     const dx = point.x - x;
     const dy = point.y - y;
     const centerDistance = Math.hypot(dx * scaleX, dy * scaleY);
-    const handleDistance = Math.hypot((dx - radius) * scaleX, dy * scaleY);
+    const handleScale = maskRightExtent(shape);
+    const handleDistance = Math.hypot((dx - radius * handleScale) * scaleX, dy * scaleY);
     const resize = handleDistance <= 12 && handleDistance < centerDistance;
-    if (!resize && centerDistance > 12 && Math.hypot(dx, dy) > radius) return;
+    if (!resize && centerDistance > 12 && !containsMaskPoint(shape, this.#mask, point)) return;
     event.preventDefault();
-    this.#drag = {pointerId: event.pointerId, resize, dx, dy, radius};
+    this.#drag = {pointerId: event.pointerId, resize, dx, dy, radius, handleScale};
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
@@ -285,17 +299,19 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
     const drag = this.#drag;
     if (this.#busy || !drag || event.pointerId !== drag.pointerId) return;
     const point = this.#point(event);
-    const circle = {...this.#circle};
-    if (drag.resize) circle.radius = this.#limitRadius(drag.radius + point.x - circle.x - drag.dx);
-    else {
-      circle.x = point.x - drag.dx;
-      circle.y = point.y - drag.dy;
+    const frame = {...this.#mask};
+    if (drag.resize) {
+      const delta = (point.x - frame.x - drag.dx) / drag.handleScale;
+      frame.radius = this.#limitRadius(drag.radius + delta);
+    } else {
+      frame.x = point.x - drag.dx;
+      frame.y = point.y - drag.dy;
     }
-    this.#setCircle(circle);
+    this.#setFrame(frame);
   }
 
   #limitRadius(radius) {
-    const {x, y} = this.#circle;
+    const {x, y} = this.#mask;
     const {width, height} = this.#image;
     return Math.min(radius, x, width - x, y, height - y);
   }
@@ -303,19 +319,29 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
   #numeric(input) {
     const value = input.valueAsNumber;
     if (this.#busy || !this.#image || !Number.isFinite(value)) return;
-    const circle = {...this.#circle};
+    const frame = {...this.#mask};
     const {width, height} = this.#image;
-    if (input.name === "centerX") circle.x = value / 100 * width;
-    else if (input.name === "centerY") circle.y = value / 100 * height;
-    else circle.radius = this.#limitRadius(value / 100 * Math.min(width, height));
-    this.#setCircle(circle, input);
+    if (input.name === "centerX") frame.x = value / 100 * width;
+    else if (input.name === "centerY") frame.y = value / 100 * height;
+    else frame.radius = this.#limitRadius(value / 100 * Math.min(width, height));
+    this.#setFrame(frame, input);
   }
 
-  #setCircle(circle, activeInput) {
+  #selectShape(shape) {
+    if (this.#busy || !this.#image || !MASK_SHAPES.includes(shape)) return;
+    this.#drag = null;
+    this.#setMask({...this.#mask, shape});
+  }
+
+  #setFrame(frame, activeInput) {
     const {width, height} = this.#image;
-    const next = constrainCircle(circle, width, height, this.#minimumRadius);
-    if (next.x !== this.#circle.x || next.y !== this.#circle.y || next.radius !== this.#circle.radius) {
-      this.#circle = next;
+    const bounded = constrainCircle(frame, width, height, this.#minimumRadius);
+    this.#setMask({...bounded, shape: this.#mask.shape}, activeInput);
+  }
+
+  #setMask(next, activeInput) {
+    if (!sameFrame(next, this.#mask) || next.shape !== this.#mask.shape) {
+      this.#mask = next;
       if (["Saved", "Removed"].includes(this.#message[0])) this.#status(null);
     }
     this.#paint(activeInput);
@@ -323,7 +349,17 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
 
   reset() {
     if (this.#busy || !this.#image) return;
-    this.#setCircle(toCircle(null, this.#image.width, this.#image.height));
+    this.#setFrame(toCircle(null, this.#image.width, this.#image.height));
+  }
+
+  #draftRecord() {
+    const {width, height} = this.#image;
+    const {shape} = this.#mask;
+    const saved = this.#snapshot;
+    if (saved?.imageWidth === width && saved.imageHeight === height && sameFrame(this.#mask, this.#originalMask)) {
+      return {...saved, shape};
+    }
+    return toRecord(this.#src, this.#mask, width, height, shape);
   }
 
   async persist(remove) {
@@ -341,12 +377,8 @@ export class MaskEditor extends HandlebarsApplicationMixin(ApplicationV2) {
         await this.#store.remove(this.#src, options);
         this.#snapshot = null;
       } else {
-        const {width, height} = this.#image;
-        const unchanged = this.#circle === this.#originalCircle && this.#snapshot?.imageWidth === width
-          && this.#snapshot.imageHeight === height;
-        const record = unchanged ? this.#snapshot : toRecord(this.#src, this.#circle, width, height);
-        this.#snapshot = await this.#store.save(record, options);
-        this.#originalCircle = this.#circle;
+        this.#snapshot = await this.#store.save(this.#draftRecord(), options);
+        this.#originalMask = this.#mask;
       }
       this.#status(remove ? "Removed" : "Saved");
     } catch (error) {

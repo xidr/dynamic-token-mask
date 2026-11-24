@@ -20,7 +20,8 @@ function element(properties = {}) {
 
 function canvas() {
   const operations = [];
-  const methods = ["clearRect", "drawImage", "beginPath", "rect", "ellipse", "fill", "stroke", "arc", "clip", "getImageData"];
+  const methods = ["clearRect", "drawImage", "beginPath", "rect", "ellipse", "moveTo", "lineTo",
+    "closePath", "fill", "stroke", "arc", "clip", "getImageData"];
   const context = Object.fromEntries(methods.map(name => [name, (...args) => operations.push([name, ...args])]));
   return element({
     operations,
@@ -32,6 +33,7 @@ function canvas() {
 
 function view(path) {
   const fields = {
+    '[name="shape"]': element({value: "circle"}),
     "file-picker": element({value: path, ownerDocument: {baseURI: "https://foundry.example/table/game"}}),
     ".mask-source": canvas(),
     ".mask-preview": canvas(),
@@ -169,7 +171,9 @@ test("loading an image refits the editor only if its content extends below the v
   const editor = await api.openEditor();
   const body = editor.parts.body;
   const workspace = body.querySelector(".mask-workspace");
+  const selector = body.querySelector('[name="shape"]');
   const status = body.querySelector(".mask-status");
+  assert.equal(selector.disabled, true);
   let loadedBottom = 980;
   t.mock.method(editor.element, "getBoundingClientRect", () => ({bottom: workspace.hidden ? 550 : loadedBottom}));
   const fit = t.mock.method(editor, "setPosition", () => {
@@ -178,7 +182,10 @@ test("loading an image refits the editor only if its content extends below the v
   });
 
   body.querySelector("file-picker").value = sourcePath;
-  await editor.loadImage();
+  const loading = editor.loadImage();
+  assert.equal(selector.disabled, true);
+  await loading;
+  assert.equal(selector.disabled, false);
   assert.equal(fit.mock.callCount(), 1);
   await editor.loadImage();
   assert.equal(fit.mock.callCount(), 1);
@@ -231,6 +238,125 @@ test("the radius slider follows the bounded circle before blur", async t => {
   assert.equal(slider.value, 39.92);
   assert.equal(body.querySelector('[name="radius"]').value, 39.92);
   await editor.close();
+});
+
+function selectShape(editor, shape) {
+  const input = editor.parts.body.querySelector('[name="shape"]');
+  input.value = shape;
+  input.fire("change");
+}
+
+test("switching shapes keeps the source frame and a shape-only save survives reopening", async t => {
+  startWorld(true);
+  mockImage(t);
+  const editor = await openImage();
+  const body = editor.parts.body;
+  const selector = body.querySelector('[name="shape"]');
+  const preview = body.querySelector(".mask-preview");
+  assert.equal(selector.value, "circle");
+  for (const shape of ["square", "hex-flat", "hex-pointy", "circle"]) {
+    preview.operations.length = 0;
+    selectShape(editor, shape);
+    assert.equal(body.querySelector('[name="centerX"]').value, 75);
+    assert.equal(body.querySelector('[name="centerY"]').value, 40);
+    assert.equal(body.querySelector('[name="radius"]').value, 20);
+    assert.deepEqual(preview.operations.find(([name]) => name === "drawImage").slice(2),
+      [260, 40, 80, 80, 0, 0, 80, 80]);
+    assert.equal(preview.operations[1][0], shape === "circle" ? "arc" : "moveTo");
+  }
+  await editor.persist(false);
+  assert.equal(writeAttempts, 0);
+  assert.equal(stored.version, 1);
+  selectShape(editor, "hex-flat");
+  await editor.persist(false);
+  assert.equal(stored.version, 2);
+  assert.deepEqual(api.masks.get(sourcePath), {...original, shape: "hex-flat"});
+  selectShape(editor, "square");
+  await editor.close();
+
+  const reopened = await openImage();
+  assert.equal(reopened.parts.body.querySelector('[name="shape"]').value, "hex-flat");
+  assert.equal(writeAttempts, 1);
+  await reopened.persist(true);
+  assert.equal(api.masks.get(sourcePath), null);
+  await reopened.loadImage();
+  assert.equal(reopened.parts.body.querySelector('[name="shape"]').value, "circle");
+  await reopened.close();
+});
+
+test("polygon hit tests and the pointy hexagon handle follow the outline", async t => {
+  startWorld(true);
+  mockImage(t);
+  const editor = await openImage();
+  const body = editor.parts.body;
+  const image = body.querySelector(".mask-source");
+
+  selectShape(editor, "square");
+  image.fire("pointerdown", {button: 0, pointerId: 1, clientX: 335, clientY: 115});
+  image.fire("pointermove", {pointerId: 1, clientX: 325, clientY: 105});
+  image.fire("pointerup", {pointerId: 1});
+  assert.equal(body.querySelector('[name="centerX"]').value, 72.5);
+  assert.equal(body.querySelector('[name="centerY"]').value, 35);
+
+  image.operations.length = 0;
+  selectShape(editor, "hex-pointy");
+  const handleOffset = 40 * Math.sqrt(3) / 2;
+  const [center, handle] = image.operations.filter(([name]) => name === "arc");
+  assert.ok(Math.abs(center[1] - 290 * 1.6) < 1e-10);
+  assert.ok(Math.abs(center[2] - 70 * 1.6) < 1e-10);
+  assert.ok(Math.abs(handle[1] - (290 + handleOffset) * 1.6) < 1e-10);
+  assert.equal(handle[2], center[2]);
+  const rightEdge = image.operations.filter(([name, x]) => name === "lineTo" && Math.abs(x - handle[1]) < 1e-10);
+  assert.equal(rightEdge.length, 4);
+  assert.ok(rightEdge[0][2] < handle[2] && handle[2] < rightEdge[1][2]);
+
+  image.fire("pointerdown", {button: 0, pointerId: 2, clientX: 325, clientY: 96});
+  image.fire("pointermove", {pointerId: 2, clientX: 305, clientY: 76});
+  image.fire("pointerup", {pointerId: 2});
+  assert.equal(body.querySelector('[name="centerX"]').value, 72.5);
+  assert.equal(body.querySelector('[name="centerY"]').value, 35);
+
+  const handleX = 290 + handleOffset;
+  image.fire("pointerdown", {button: 0, pointerId: 3, clientX: handleX, clientY: 70});
+  image.fire("pointermove", {pointerId: 3, clientX: handleX - handleOffset / 4, clientY: 70});
+  image.fire("pointerup", {pointerId: 3});
+  assert.equal(body.querySelector('[name="radius"]').value, 15);
+  assert.equal(body.querySelector('[name="radiusSlider"]').value, 15);
+  assert.equal(body.querySelector('[name="centerX"]').value, 72.5);
+  assert.equal(body.querySelector('[name="centerY"]').value, 35);
+
+  editor.reset();
+  assert.equal(body.querySelector('[name="shape"]').value, "hex-pointy");
+  assert.equal(body.querySelector('[name="centerX"]').value, 50);
+  assert.equal(body.querySelector('[name="centerY"]').value, 50);
+  assert.equal(body.querySelector('[name="radius"]').value, 50);
+  assert.equal(writeAttempts, 0);
+  await editor.close();
+});
+
+test("a shape-only save makes other loaded editors stale for save and removal", async t => {
+  const exact = {...original, centerX: 0.202};
+  stored = {version: 1, masks: [exact]};
+  startWorld(true);
+  mockImage(t);
+  const first = await openImage();
+  const stale = await openImage();
+  selectShape(first, "square");
+  selectShape(stale, "hex-pointy");
+  await first.persist(false);
+
+  const body = stale.parts.body;
+  for (const remove of [false, true]) {
+    await stale.persist(remove);
+    assert.equal(body.querySelector(".mask-status").textContent, "DTM.Conflict");
+    assert.equal(body.querySelector('[name="shape"]').value, "hex-pointy");
+  }
+  assert.deepEqual(api.masks.get(sourcePath), {...exact, shape: "square"});
+  assert.equal(writeAttempts, 1);
+
+  await stale.loadImage();
+  assert.equal(body.querySelector('[name="shape"]').value, "square");
+  await Promise.all([first.close(), stale.close()]);
 });
 
 test("save and remove use the loaded image, and failed writes preserve the saved mask", async t => {

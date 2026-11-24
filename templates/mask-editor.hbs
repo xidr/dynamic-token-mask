@@ -18,10 +18,24 @@
         <canvas class="mask-preview" role="img" aria-label="{{localize 'DTM.Preview'}}"></canvas>
         <figcaption>{{localize "DTM.Preview"}}</figcaption>
       </figure>
+      <label class="mask-shape">
+        {{localize "DTM.Shape"}}
+        <select name="shape" disabled>
+          <option value="circle">{{localize "DTM.ShapeCircle"}}</option>
+          <option value="square">{{localize "DTM.ShapeSquare"}}</option>
+          <option value="hex-flat">{{localize "DTM.ShapeHexFlat"}}</option>
+          <option value="hex-pointy">{{localize "DTM.ShapeHexPointy"}}</option>
+        </select>
+      </label>
       <label>{{localize "DTM.CenterX"}} <input name="centerX" type="number" min="0" max="100" step="any"></label>
       <label>{{localize "DTM.CenterY"}} <input name="centerY" type="number" min="0" max="100" step="any"></label>
-      <label>{{localize "DTM.Radius"}} <input name="radius" type="number" min="0.1" max="50" step="any"></label>
-      <input name="radiusSlider" type="range" min="0.1" max="50" step="any" aria-label="{{localize 'DTM.Radius'}}">
+      <label>
+        {{localize "DTM.FrameSize"}}
+        <input name="radius" type="number" min="0.1" max="50" step="any" aria-describedby="{{sizeDescriptionId}}">
+      </label>
+      <input name="radiusSlider" type="range" min="0.1" max="50" step="any"
+             aria-label="{{localize 'DTM.FrameSize'}}" aria-describedby="{{sizeDescriptionId}}">
+      <p class="hint mask-size-help" id="{{sizeDescriptionId}}">{{localize "DTM.FrameSizeHelp"}}</p>
     </div>
   </div>
   <p class="hint mask-shared">{{localize "DTM.Shared"}}</p>

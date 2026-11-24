@@ -75,9 +75,10 @@
 }
 
 .dynamic-token-mask .mask-controls {
-  flex: 0 1 11rem;
+  flex: 0 1 14rem;
   display: grid;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .dynamic-token-mask .mask-controls figure {
@@ -90,6 +91,15 @@
   grid-template-columns: 1fr 5rem;
   align-items: center;
   gap: 0.5rem;
+}
+
+.dynamic-token-mask .mask-controls .mask-shape {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+}
+
+.dynamic-token-mask .mask-size-help {
+  margin: 0;
 }
 
 .dynamic-token-mask.mask-picker-control > button {
