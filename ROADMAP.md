@@ -54,8 +54,10 @@ Renderer and sheet integrations passed automated checks. Post-merge checks ran o
 
 - [x] Add square, flat-topped hexagon and pointy-topped hexagon to the editor while preserving the center and zoom on shape changes. Circle remains the default. [Editor feature record](knowledge/features/portrait-mask-editor.md)
 - [x] Share the selected outline in the editor preview, eligible token textures, native previews, transition targets and ring subject frames. Upgrade legacy storage on the first successful polygon save. [Storage contract](knowledge/reference/mask-storage.md)
-- [ ] As GM, verify shape selection, preservation of framing, reset, Cancel, reopen, stale editor conflicts, live saves and removal, reload, sheet previews and a rectangular ring subject frame.
-- [ ] As owning player, verify live changes, reload, removal, held drags, native fades, and implicit and explicit ring subjects including the rectangular frame. [Verification procedure](knowledge/how-to/verify-mask-shapes.md)
+- [x] As GM, verified all four editor shapes, framing, reset, Cancel, reopen, stale Save and Remove, and shape-only edits in open previews. The ordinary scene sheet could display stale art after rapidly returning to the original portrait. The prototype passed the rapid sequence. [Shape results](knowledge/how-to/verify-mask-shapes.md#check-it-worked)
+- [x] Both roles verified placed crop updates, reload, removal, held drags, native fades and implicit and explicit ring subjects, including a rectangular subject frame. Foundry permissions blocked the owning player from opening configuration sheets or placing tokens. [Shape results by role](knowledge/how-to/verify-mask-shapes.md#check-it-worked)
+- [x] Repaired the scene preview's return to the original portrait. The regression test and full suite passed, and independent review accepted the fix. [Bug record](knowledge/bugs/fixed/stale-scene-token-preview.md)
+- [ ] After merging the repair, rerun the rapid sequence on the live GM sheet and verify Cancel, Apply and the owning player's placed token. The external CORS thumbnail case also awaits a suitable fixture. [Verification procedure](knowledge/how-to/verify-native-token-previews-and-transitions.md)
 
 ## 7. Add optional colored borders to masks
 

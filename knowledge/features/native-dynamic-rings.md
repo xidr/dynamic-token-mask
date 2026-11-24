@@ -38,7 +38,7 @@ The token update hook in `scripts/main.js` also handles a stored subject change 
 
 Renderer tests cover the subject matrix, live mask edits, subject-only preview switches, stale work, crop sharing, restoration and teardown.
 
-Node tests cover polygon subjects in rectangular ring frames and shape-only changes. Live checks of polygon crops and native ring framing are pending for both roles. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md)
+Node tests cover polygon subjects in rectangular ring frames and shape-only changes. On Foundry 14.369 at `d7e85f4`, the GM and owning player saw the appropriate implicit and explicit subject outlines and retained native frame dimensions, fit, subject scale and ring appearance, including with a rectangular subject texture. Both clients saw shape-only edits, held drags, restoration and settled transitions. [Shape results](../how-to/verify-mask-shapes.md#check-it-worked)
 
 ## Foundry 14.369 baseline
 

@@ -33,7 +33,7 @@ This batch covers ordinary static art. See the [native dynamic rings](native-dyn
 
 `scripts/main.js` wires Foundry token and prototype-sheet hooks to `scripts/mask-renderer.mjs` and `scripts/prototype-mask-preview.mjs`. The renderer and prototype tests exercise preview lifetimes, stale loads, exact sources, mask changes while previews are open, CORS-enabled prototype art and transition filter identity and cleanup.
 
-Shared rendering uses the selected outline for the same fixed square sampling frame in previews and eligible transition targets. Live checks of the additional shapes are pending. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md)
+Shared rendering uses the selected outline for the same fixed square sampling frame in previews and eligible transition targets. Foundry 14.369 shape checks at `d7e85f4` confirmed live shape edits in held drags for both roles and in open GM previews, along with the expected mid-fade and settled art. The GM prototype passed rapid portrait changes. The ordinary scene sheet could retain stale art when the GM rapidly returned the preview to the original portrait. The repair at `f41382b` queues a native draw for an eligible scene preview using Foundry's prepared image path. The Node regression passed and a live rerun is pending. [Shape results](../how-to/verify-mask-shapes.md#check-it-worked) · [Scene preview repair](../bugs/fixed/stale-scene-token-preview.md)
 
 ## Foundry 14.369 baseline
 
@@ -56,7 +56,7 @@ On 2026-11-24, the GM and owning player loaded module revision `4d249b2` in sepa
 | Scenario | GM | Owning player |
 | --- | --- | --- |
 | Held drag, drop and cancel | The held clone displayed the 226 px B crop. Drop and cancel preserved the placed token's crop. | The held clone displayed the 226 px B crop. Drop and cancel preserved the placed token's crop. |
-| Scene-token configuration | A and B displayed 144 px and 226 px crops. C displayed the original 512 px texture. Rapid A → B → C → A settled on the A crop. Cancel kept A and Apply showed the B crop. | Native permissions blocked opening the sheet. Rendering as this role is unverified. |
+| Scene-token configuration | A and B displayed 144 px and 226 px crops. C displayed the original 512 px texture. Rapid A → B → C → A settled on the A crop in this run. A later shape check reproduced a stale preview using the same sequence. Cancel kept A and Apply showed the B crop. [Scene preview repair](../bugs/fixed/stale-scene-token-preview.md) | Native permissions blocked opening the sheet. Rendering as this role is unverified. |
 | Prototype Appearance | A and B showed their respective crops and C showed its original art. Rapid selection changes, partial Appearance renders and the ring toggle showed the expected thumbnail. After Cancel, placing a new token gave a 144 px A crop. After Apply, placing a new token gave a 226 px B crop. | The GM-placed tokens showed the same 144 px A and 226 px B crops. Native permissions blocked the owner from opening the sheet or placing a token. |
 | Mask changes during a held drag | The placed token and held clone each changed from 512 px to 205 px on create, to 287 px on replacement, and back to 512 px on removal. | The placed token and held clone each showed the same four widths while the GM changed the mask. |
 | Mask changes with the scene-token sheet open | A preview of C showed 205 px after creating a mask and 287 px after replacing it. Removing it restored the 512 px source. The placed token's saved portrait remained A. | Native permissions blocked opening the sheet. |

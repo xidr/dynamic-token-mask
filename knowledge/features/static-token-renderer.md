@@ -31,7 +31,7 @@ This milestone covered ordinary static scene tokens. See the [Portrait mask edit
 
 `scripts/main.js` connects Foundry hooks to `scripts/mask-renderer.mjs`. The Node tests cover crop geometry, sharing, redraw, reload, release, stale work and fallback. All 19 tests passed and the implementation review accepted the batch with no findings.
 
-The shape extension passed Node checks for off-center sampling and clipping, shape-only replacement, shared texture lifetime and late completions. Live square and hexagon checks are pending. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md)
+The shape extension passed Node checks for off-center sampling and clipping, shape-only replacement, shared texture lifetime and late completions. Both roles verified all four outlines on Foundry 14.369 at `d7e85f4`. Matching tokens updated on shape-only saves and kept their paths and footprints. The 1×1 crop followed the editor preview, the rectangular token retained native fit, and unrelated art stayed unchanged. Saved shapes persisted through reload and removal restored the original art. [Shape results](../how-to/verify-mask-shapes.md#check-it-worked)
 
 ## Runtime verification
 

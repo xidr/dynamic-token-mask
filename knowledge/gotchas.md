@@ -15,7 +15,9 @@ Foundry 14.369 positions an auto-height ApplicationV2 when it renders. If asynch
 
 An ApplicationV2 opened from a detached picker needs the opener’s Foundry window ID at render time. Read it from the opener’s `ownerDocument.defaultView.id` and pass it in `window.windowId` so the editor opens in the same host window. Close can restore focus while the opener remains connected. See [File picker integration](reference/file-picker-integration.md).
 
-In Foundry 14.369, returning a scene configuration preview to the placed token's original image path can refresh the clone without redrawing it. Compare the selected path and loaded base texture before applying a crop. A prototype thumbnail can display external art even when its image is unusable for canvas. Use an anonymous CORS image request for crop drawing when the remote source allows it. [Native token previews and transitions](features/native-token-previews-and-transitions.md)
+In Foundry 14.369, returning a scene configuration preview to the original portrait can refresh the clone without scheduling a draw. The visible texture may still look correct when an earlier draw is in flight. Observe Foundry's prepared path and queue a native draw for the eligible return. Compare the path and loaded base texture before applying a crop. [Scene preview repair](bugs/fixed/stale-scene-token-preview.md)
+
+A prototype thumbnail can display external art even when its image is unusable for canvas. Use an anonymous CORS image request for crop drawing when the remote source allows it. [Native token previews and transitions](features/native-token-previews-and-transitions.md)
 
 An empty stored ring subject can have a populated prepared path in Foundry 14.369. This inferred path determines the native fallback art. The stored field distinguishes an explicit choice, and an implicit mask is drawn from the original portrait. [Native dynamic ring subject decision](decisions/2026-11-24-native-dynamic-ring-subjects.md)
 

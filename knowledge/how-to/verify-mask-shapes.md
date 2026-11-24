@@ -26,12 +26,20 @@ After an approved merge, use the designated test world with the changed module e
 
 ## Check it worked
 
-TODO: unverified. Record the date, Foundry build, module revision, expected and observed results and artifact references by role. Use rendered screenshots for visible art and HTML snapshots for editor and sheet controls. Update the [roadmap](../../ROADMAP.md) and applicable feature records.
+On 2026-11-24, all six steps ran in isolated GM and owning-player sessions on Foundry 14.369 with module revision `d7e85f4`. The table records the observations from that build.
 
-| Role | Pending evidence |
-| --- | --- |
-| GM | Editor shape options and footer, frame preservation, reset, Cancel, reopen, stale Save and Remove, synchronized shape edits, reload and removal, held drag, sheet previews, native fades and implicit and explicit ring subjects including the rectangular frame |
-| Owning player | Absent editor entry, live shape edits and removal, reload, held drag, native fades and implicit and explicit ring subjects including the rectangular frame. Record native configuration or placement permissions if they prevent checks. |
+| Scenario | GM | Owning player |
+| --- | --- | --- |
+| Editor framing and controls | Opened from settings and the picker. Circle was the default and all four footer actions remained visible at 1400×950. Shape changes kept the off-center frame and sampled artwork. Both hexagons passed outside hit testing, center drag, resizing and reset. Cancel discarded the draft. | The editor entry was absent in settings. |
+| Saving and reopening | Both matching tokens followed all four outlines with the original paths and footprints. The 1×1 crop matched the editor framing, the rectangular token retained native fit, and unrelated art stayed unchanged. Reopening restored the saved shape. Cancelling a change retained it. A stale window rejected both Save and Remove after another window saved a different shape. | Both matching tokens updated on each shape-only save. The unrelated token retained its art. |
+| Reload and removal | The saved shape persisted on reload and reopened in the editor. Removing it restored both original portraits. | Reload preserved the saved shape. Removal restored both originals. |
+| Held drags and configuration | The held clone and placed token followed shape edits. Scene and prototype previews followed shape-only mask edits. The prototype's rapid image changes passed. Rapidly returning to the placed portrait in the ordinary scene sheet could leave another portrait visible until a draw. Separate Cancel and Apply checks passed. | Held clones and placed tokens followed live shape edits. The owner saw the GM's applied portrait on the placed token. Foundry configuration and placement permissions blocked those owner actions. |
+| Native fades | Mid-fade frames showed both masked outlines in the A-to-B blend and the raw C art in the B-to-C blend. Interrupted fades settled on the requested masked and unmasked targets. | Mid-fade and settled art matched the GM in both completed fades and both interruption cases. |
+| Dynamic ring subjects | Implicit and explicit subjects followed the applicable outline. The rectangular native subject retained its frame dimensions, fit, scale and ring appearance. Shape-only edits, removal, held drags and settled transitions used the applicable crop or restored native art. | Subject selection, fit, live edits, removal, held drags and settled transitions agreed with the GM observations. |
+
+HTML snapshots, rendered screenshots and diagnostic traces were kept outside Foundry Data. The evidence includes `editor-frame-checks.json`, `editor-conflicts.json`, `reload-and-removal.json`, `rapid-diagnostic2.json`, intermediate screenshots and `midframes.json`, `ring-pulse.json` and `cleanup.json`. Cleanup removed disposable scene and actor fixtures, restored fixture settings and confirmed the temporary mask records were gone in both sessions.
+
+The [scene preview repair](../bugs/fixed/stale-scene-token-preview.md) passed automated checks and awaits a live rerun. An external CORS-enabled portrait was unavailable for the prototype thumbnail check. See the [roadmap](../../ROADMAP.md) for follow-up.
 
 ## If it goes wrong
 

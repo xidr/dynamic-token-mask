@@ -38,7 +38,7 @@ Animated source images and token-specific fit previews. Simultaneous edits from 
 
 `scripts/main.js` registers the GM menu and API. `scripts/mask-editor.mjs`, `scripts/mask-geometry.mjs` and `templates/mask-editor.hbs` implement the editor. `scripts/mask-renderer.mjs` provides crop drawing and `scripts/mask-store.mjs` checks expected snapshots. `styles/module.css`, `lang/en.json` and `lang/ru.json` provide presentation and labels.
 
-On 2026-11-24, the full Node suite passed. Mask shape tests cover outlines, handle placement, shape switching and reset, preview clipping, reopening, Cancel and stale shape-only writes. Live shape checks for the GM editor and receiving player are pending. [Verify mask shapes in Foundry](../how-to/verify-mask-shapes.md)
+On 2026-11-24, the full Node suite passed. Mask shape tests cover outlines, handle placement, shape switching and reset, preview clipping, reopening, Cancel and stale shape-only writes. On Foundry 14.369 at `d7e85f4`, the GM opened both editor entry points and verified the four outlines, shared framing, both hexagon handles, reset, Cancel, reopening and stale Save and Remove. The player saw the saved changes and had no editor entry in settings. [Shape results](../how-to/verify-mask-shapes.md#check-it-worked)
 
 On 2026-11-23, the full Node suite passed for the original circle editor. It covers path preservation, crop geometry and clipping, static format detection, bounded radius feedback, Cancel, persistence failures and competing editor writes.
 
