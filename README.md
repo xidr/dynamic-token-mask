@@ -14,14 +14,17 @@ In the built-in file picker, a ready-world GM can use the portrait icon beside a
 
 Masks apply to the exact resolved image. In the live checks, switching to an unrelated wildcard variant displayed its original art, and switching back displayed the crop. The editor shows a square crop. Foundry applies token fit, rotation, mirroring and texture scale to that square, so a stretched token can display the circle as an ellipse. [Renderer verification](knowledge/features/static-token-renderer.md#first-ui-release)
 
+The native token workflow batch covers held drag previews, scene-token configuration previews, prototype Appearance thumbnails and targets in recognized native image transitions. Automated checks passed. Foundry 14.369 runtime checks on the changed build are pending. [Native token previews and transitions](knowledge/features/native-token-previews-and-transitions.md)
+
 ## Development
 
 Open this folder as its own IDE project and Git repository.
 
 - `module.json`: Foundry module manifest.
-- `scripts/main.js`: registers storage and the editor menu, exposes the module API and wires renderer and picker hooks.
+- `scripts/main.js`: registers storage and the editor menu, exposes the module API and wires renderer, prototype preview and picker hooks.
 - `scripts/mask-store.mjs`: validated world-level mask persistence.
 - `scripts/mask-renderer.mjs`: shared circular crop drawing and token mesh texture lifecycle.
+- `scripts/prototype-mask-preview.mjs`: crop for the native prototype Appearance thumbnail.
 - `scripts/mask-editor.mjs`, `scripts/mask-geometry.mjs`: GM editor, image validation and circle geometry.
 - `scripts/mask-file-picker.mjs`: GM-only controls and saved-mask indicators in the built-in picker.
 - `templates/mask-editor.hbs`: editor controls and preview.

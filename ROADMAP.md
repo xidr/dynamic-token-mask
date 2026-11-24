@@ -36,7 +36,7 @@ A GM can open a portrait in Foundry’s file picker and frame the subject for al
 
 ### Batch 1. Drag previews, token configuration previews and image transitions
 
-Check each workflow in the designated Foundry 14.369 test world and add renderer hooks where the observed behavior requires them.
+Renderer and sheet integrations passed automated checks. The Foundry 14.369 baseline identified raw previews and incoming transition art. The checks below require runtime evidence from the changed build. [Baseline and implementation](knowledge/features/native-token-previews-and-transitions.md) · [Verification procedure](knowledge/how-to/verify-native-token-previews-and-transitions.md)
 
 - [ ] Drag a masked token as the GM and as its owning player. The drag preview shows the placed token’s crop, and both dropping and cancelling preserve the correct portrait.
 - [ ] Switch images in scene-token and prototype-token configuration. Each preview shows the selected image with its own saved crop, if any. Cancelling preserves the original. Applying the change updates the scene token or, for a prototype, gives the next newly placed token the selected portrait.

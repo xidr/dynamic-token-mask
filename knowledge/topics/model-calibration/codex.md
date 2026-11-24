@@ -1,7 +1,7 @@
 ---
 title: Codex calibration log
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [workflow]
 status: active
 ---
@@ -9,7 +9,7 @@ status: active
 
 **TL;DR:** Record finished Codex work here.
 
-Last verified: 2026-11-23
+Last verified: 2026-11-24
 
 See [Model calibration](_overview.md) for the schema.
 
@@ -23,3 +23,4 @@ See [Model calibration](_overview.md) for the schema.
 | 2026-11-23 | file-picker-integration | feature | Codex | Sol High, 1 Standard batch and 1 Routine fix | Astra Medium, Accept after fixes → Accept | 1 | Editors opened from detached pickers needed to use the picker’s host window. | Native agents. 40 Node tests passed. An offline Chromium fixture exercised four views with Foundry 14.369 styles. Live picker checks pending. |
 | 2026-11-23 | verify-ui-release | validation | Codex | 1 Standard live verification batch and 1 Routine documentation batch | Planner check under Markdown-only review exception | 0 | Foundry fit and nonuniform scale can stretch the square crop on the token. | Native agents. Foundry 14.369 GM and player sessions. |
 | 2026-11-23 | playwright-validation | docs | Codex | Sol High, 1 implementation batch. Sol Medium, 1 Routine finish. | Astra Medium, Accept | 0 | None | CLI agents. Implementation passed the knowledge checks, instruction mirroring, reviewer TOML parsing, all four Node test files, JavaScript syntax, manifest paths, JSON, translation parity and `git diff --check`. Review reran the knowledge and diff checks and skipped Node for the Markdown-only batch. No live-world tests in this task. Prior Foundry 14.369 checks confirmed both player crops after scene navigation and rejoin. A separate reload reached the canvas, then the return to the test scene timed out. Crop verification after that reload remains pending. |
+| 2026-11-24 | native-token-previews-transitions | feature | Codex | Astra Medium, 1 Difficult implementation batch and 1 Difficult fix | Astra Medium, Accept after fixes → Accept | 1 | External prototype art needed a canvas-readable CORS request. Active canvas previews needed to refresh after mask changes. | Native agents. All five test files and 26 focused tests passed. Foundry 14.369 GM and owner baseline complete, with changed-build runtime verification pending. |

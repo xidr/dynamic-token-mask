@@ -1,7 +1,7 @@
 ---
 title: Static token renderer
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-24
 tags: [feature, rendering]
 status: active
 source: scripts/main.js, scripts/mask-renderer.mjs and tests/mask-renderer.test.mjs
@@ -25,7 +25,7 @@ At ready and on draw, the renderer reads the mask for the exact image path. Rece
 
 ## Out of scope
 
-This milestone covered ordinary static scene tokens. See [Portrait mask editor](portrait-mask-editor.md) for the editor and [File picker mask controls](file-picker-mask-controls.md) for per-image picker controls. Dynamic rings, drag and configuration previews, animated images and image transitions remain future work.
+This milestone covered ordinary static scene tokens. See the [Portrait mask editor](portrait-mask-editor.md) and [File picker mask controls](file-picker-mask-controls.md) for GM editing, and [Native token previews and transitions](native-token-previews-and-transitions.md) for the later preview and transition integrations. Dynamic rings and animated images are outside this renderer's scope.
 
 ## Implementation
 
