@@ -12,9 +12,46 @@ export function toCircle(record, width, height) {
     y: (record?.centerY ?? 0.5) * height, radius}, width, height, Math.min(shorterSide / 1000, radius));
 }
 
-export function toRecord(src, circle, imageWidth, imageHeight) {
+export function toRecord(src, circle, imageWidth, imageHeight, shape) {
   return {src, centerX: circle.x / imageWidth, centerY: circle.y / imageHeight,
-    radius: circle.radius / Math.min(imageWidth, imageHeight), imageWidth, imageHeight};
+    radius: circle.radius / Math.min(imageWidth, imageHeight), imageWidth, imageHeight,
+    ...(shape === undefined ? {} : {shape})};
+}
+
+export const MASK_SHAPES = Object.freeze(["circle", "square", "hex-flat", "hex-pointy"]);
+
+// Vertices run clockwise in canvas coordinates, relative to half the square sampling frame.
+const apothem = Math.sqrt(3) / 2;
+const outlines = {
+  square: [[1, 1], [-1, 1], [-1, -1], [1, -1]],
+  "hex-flat": [[1, 0], [0.5, apothem], [-0.5, apothem], [-1, 0], [-0.5, -apothem], [0.5, -apothem]],
+  "hex-pointy": [[0, -1], [apothem, -0.5], [apothem, 0.5], [0, 1], [-apothem, 0.5], [-apothem, -0.5]]
+};
+
+/** Append an outline in canvas coordinates, allowing independent display scales for each axis. */
+export function traceMaskPath(context, shape = "circle", x, y, radiusX, radiusY = radiusX) {
+  if (shape === "circle") {
+    if (radiusX === radiusY) context.arc(x, y, radiusX, 0, 2 * Math.PI);
+    else context.ellipse(x, y, radiusX, radiusY, 0, 0, 2 * Math.PI);
+    return;
+  }
+  const vertices = outlines[shape];
+  context.moveTo(x + radiusX * vertices[0][0], y + radiusY * vertices[0][1]);
+  for (const [dx, dy] of vertices.slice(1)) context.lineTo(x + radiusX * dx, y + radiusY * dy);
+  context.closePath();
+}
+
+/** Test in source-image pixels against the same convex outline used for drawing. */
+export function containsMaskPoint(shape = "circle", {x, y, radius}, point) {
+  const dx = (point.x - x) / radius;
+  const dy = (point.y - y) / radius;
+  const tolerance = 1e-12;
+  if (shape === "circle") return Math.hypot(dx, dy) <= 1 + tolerance;
+  const vertices = outlines[shape];
+  return vertices.every(([ax, ay], index) => {
+    const [bx, by] = vertices[(index + 1) % vertices.length];
+    return (bx - ax) * (dy - ay) - (by - ay) * (dx - ax) >= -tolerance;
+  });
 }
 
 export function resolveImageURL(src, base) {

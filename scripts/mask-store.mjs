@@ -1,3 +1,5 @@
+import {MASK_SHAPES} from "./mask-geometry.mjs";
+
 export const MODULE_ID = "dynamic-token-mask";
 export const SETTING_KEY = "masks";
 export const CHANGE_HOOK = `${MODULE_ID}.masksChanged`;
@@ -16,6 +18,9 @@ export function validateMask(input) {
   if (!input || typeof input !== "object") throw new TypeError("A mask record is required.");
   const {src, centerX, centerY, radius, imageWidth, imageHeight} = input;
   validateSource(src);
+  if (Object.hasOwn(input, "shape") && !MASK_SHAPES.includes(input.shape)) {
+    throw new TypeError("Unsupported mask shape.");
+  }
   for (const value of [centerX, centerY, radius, imageWidth, imageHeight]) {
     if (!Number.isFinite(value)) throw new TypeError("Mask coordinates and dimensions must be finite numbers.");
   }
@@ -29,22 +34,28 @@ export function validateMask(input) {
   const tolerance = Math.max(imageWidth, imageHeight) * 1e-12;
   if (centerX < 0 || centerX > 1 || centerY < 0 || centerY > 1
     || r > Math.min(x, imageWidth - x, y, imageHeight - y) + tolerance) {
-    throw new RangeError("The circle must fit inside the source image.");
+    throw new RangeError("The mask frame must fit inside the source image.");
   }
-  return {src, centerX, centerY, radius, imageWidth, imageHeight};
+  // Circles keep their legacy API representation so schema upgrades preserve snapshots and cache keys.
+  const record = {src, centerX, centerY, radius, imageWidth, imageHeight};
+  if (Object.hasOwn(input, "shape") && input.shape !== "circle") record.shape = input.shape;
+  return record;
 }
 
 function readCollection(value) {
-  if (value?.version !== 1 || !Array.isArray(value.masks)) {
+  if (![1, 2].includes(value?.version) || !Array.isArray(value.masks)) {
     throw new Error("Unsupported or invalid mask storage format; refusing to overwrite it.");
   }
   const records = new Map();
   for (const input of value.masks) {
     const mask = validateMask(input);
+    if ((value.version === 1 && mask.shape) || (value.version === 2 && !Object.hasOwn(input, "shape"))) {
+      throw new Error("Mask shape does not match the storage version.");
+    }
     if (records.has(mask.src)) throw new Error("Duplicate image path in mask storage.");
     records.set(mask.src, mask);
   }
-  return records;
+  return {records, version: value.version};
 }
 
 /** Foundry adapter dependencies are injected so persistence behavior can be tested without a world. */
@@ -74,7 +85,7 @@ export class MaskStore {
 
   /** Call at ready: establish a baseline after world settings have loaded. */
   initialize() {
-    this.#previous = this.#read();
+    this.#previous = this.#read().records;
   }
 
   #read() {
@@ -83,7 +94,7 @@ export class MaskStore {
 
   get(src) {
     validateSource(src);
-    return this.#read().get(src) ?? null;
+    return this.#read().records.get(src) ?? null;
   }
 
   has(src) {
@@ -91,25 +102,25 @@ export class MaskStore {
   }
 
   list() {
-    return [...this.#read().values()];
+    return [...this.#read().records.values()];
   }
 
   save(input, {expected} = {}) {
     // Copy and validate before queuing: caller mutations cannot change a pending save.
     const mask = validateMask(input);
-    return this.#write(mask.src, expected, async records => {
+    return this.#write(mask.src, expected, async ({records, version}) => {
       if (JSON.stringify(records.get(mask.src)) === JSON.stringify(mask)) return {...mask};
       records.set(mask.src, mask);
-      await this.#persist(records);
+      await this.#persist(records, mask.shape ? 2 : version);
       return {...mask};
     });
   }
 
   remove(src, {expected} = {}) {
     validateSource(src);
-    return this.#write(src, expected, async records => {
+    return this.#write(src, expected, async ({records, version}) => {
       if (!records.delete(src)) return false;
-      await this.#persist(records);
+      await this.#persist(records, version);
       return true;
     });
   }
@@ -119,24 +130,26 @@ export class MaskStore {
     const expectedMask = expected == null ? expected : validateMask(expected);
     const result = this.#queue.then(() => {
       if (!this.#canWrite()) throw new Error("Only a GM in a ready world can change masks.");
-      const records = this.#read();
+      const collection = this.#read();
       if (expectedMask !== undefined
-        && JSON.stringify(records.get(src) ?? null) !== JSON.stringify(expectedMask)) {
+        && JSON.stringify(collection.records.get(src) ?? null) !== JSON.stringify(expectedMask)) {
         throw new MaskConflictError("The saved mask changed after it was loaded.");
       }
-      return operation(records);
+      return operation(collection);
     });
     // Serialize this client's writes without poisoning the queue after a failed save.
     this.#queue = result.catch(() => {});
     return result;
   }
 
-  #persist(records) {
-    return this.#settings.set(MODULE_ID, SETTING_KEY, {version: 1, masks: [...records.values()]});
+  #persist(records, version) {
+    const masks = [...records.values()];
+    const value = version === 1 ? masks : masks.map(mask => ({...mask, shape: mask.shape ?? "circle"}));
+    return this.#settings.set(MODULE_ID, SETTING_KEY, {version, masks: value});
   }
 
   #onChange(value) {
-    const next = readCollection(value);
+    const {records: next} = readCollection(value);
     const paths = [...new Set([...this.#previous.keys(), ...next.keys()])].filter(src =>
       JSON.stringify(this.#previous.get(src)) !== JSON.stringify(next.get(src)));
     this.#previous = next;

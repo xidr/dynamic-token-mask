@@ -11,10 +11,12 @@ function setup(initial = {version: 1, masks: []}) {
   let allowed = true;
   let fail = false;
   const events = [];
+  const writes = [];
   const settings = {
     register: (_module, _key, options) => { config = options; },
     get: () => value,
     set: async (_module, _key, next) => {
+      writes.push(structuredClone(next));
       await Promise.resolve();
       if (fail) { fail = false; throw new Error("Write failed"); }
       value = structuredClone(next);
@@ -24,7 +26,7 @@ function setup(initial = {version: 1, masks: []}) {
   const store = new MaskStore({settings, canWrite: () => allowed, notify: paths => events.push(paths)});
   store.register();
   store.initialize();
-  return {store, events, config, settings, deny: () => { allowed = false; },
+  return {store, events, writes, config, settings, deny: () => { allowed = false; },
     fail: () => { fail = true; }, replace: next => { value = next; config.onChange(value); }};
 }
 
@@ -98,6 +100,68 @@ test("failed persistence leaves data intact and queue recovers", async () => {
 });
 
 test("refuses unknown schemas and duplicate records without replacing data", () => {
-  assert.throws(() => setup({version: 2, masks: []}), /Unsupported/);
+  assert.throws(() => setup({version: 3, masks: []}), /Unsupported/);
   assert.throws(() => setup({version: 1, masks: [mask(), mask()]}), /Duplicate/);
+});
+
+test("reads and edits legacy circles without upgrading until a polygon is saved", async () => {
+  const a = mask();
+  const b = mask("b.webp");
+  const h = setup({version: 1, masks: [a]});
+  const snapshot = h.store.get(a.src);
+  assert.deepEqual(h.store.list(), [a]);
+  await h.store.save({...a, shape: "circle"}, {expected: snapshot});
+  assert.deepEqual(h.writes, []);
+  await h.store.save({...b, shape: "circle"});
+  assert.deepEqual(h.settings.get(), {version: 1, masks: [a, b]});
+
+  const hex = {...b, shape: "hex-flat"};
+  h.fail();
+  await assert.rejects(h.store.save(hex, {expected: b}), /Write failed/);
+  assert.deepEqual(h.settings.get(), {version: 1, masks: [a, b]});
+  await h.store.save(hex, {expected: b});
+  assert.deepEqual(h.settings.get(), {version: 2, masks: [{...a, shape: "circle"}, hex]});
+  assert.deepEqual(h.events, [[b.src], [b.src]]);
+  assert.deepEqual(setup(h.settings.get()).store.list(), [a, hex]);
+
+  // A snapshot from before another record upgraded the schema still matches.
+  await h.store.remove(a.src, {expected: snapshot});
+  await h.store.save(b, {expected: hex});
+  assert.deepEqual(h.settings.get(), {version: 2, masks: [{...b, shape: "circle"}]});
+  await h.store.remove(b.src);
+  assert.deepEqual(h.settings.get(), {version: 2, masks: []});
+});
+
+test("remote shape-only changes invalidate stale saves and removals", async () => {
+  const a = mask();
+  const h = setup({version: 1, masks: [a]});
+  const snapshot = h.store.get(a.src);
+  h.replace({version: 2, masks: [{...a, shape: "circle"}]});
+  assert.deepEqual(h.events, []);
+  const pointy = {...a, shape: "hex-pointy"};
+  h.replace({version: 2, masks: [pointy]});
+  await assert.rejects(h.store.save(a, {expected: snapshot}), MaskConflictError);
+  await assert.rejects(h.store.remove(a.src, {expected: snapshot}), MaskConflictError);
+  await h.store.save(pointy, {expected: pointy});
+  assert.deepEqual(h.writes, []);
+  assert.deepEqual(h.events, [[a.src]]);
+  await h.store.save({...a, shape: "square"}, {expected: pointy});
+  assert.deepEqual(h.events, [[a.src], [a.src]]);
+});
+
+test("checks shape names, collection schema, GM permission and full square bounds", async () => {
+  const a = mask();
+  for (const shape of [undefined, null, false, "", "triangle", "toString"]) {
+    assert.throws(() => validateMask({...a, shape}), /shape/);
+  }
+  for (const shape of ["circle", "square", "hex-flat", "hex-pointy"]) {
+    assert.doesNotThrow(() => validateMask({...a, shape, centerX: 0.25}));
+    assert.throws(() => validateMask({...a, shape, centerX: 0.24}), /fit/);
+  }
+  assert.throws(() => setup({version: 1, masks: [{...a, shape: "square"}]}), /version/);
+  assert.throws(() => setup({version: 2, masks: [a]}), /version/);
+  const h = setup({version: 1, masks: [a]});
+  h.deny();
+  await assert.rejects(h.store.save({...a, shape: "square"}), /Only a GM/);
+  assert.deepEqual(h.writes, []);
 });
